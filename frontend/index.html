@@ -16,60 +16,6 @@
     <script src="js/products.js" defer></script>
     <script src="js/navbar.js" defer></script>
 </head>
-<style>
-    /* Mobile video styling */
-    .video-background {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-    }
-    
-    .video-horizontal,
-    .video-vertical {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    
-    /* Custom play button styling */
-    .custom-play-button {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background: rgba(0, 0, 0, 0.5);
-      border: none;
-      border-radius: 50%;
-      padding: 20px;
-      cursor: pointer;
-      z-index: 10;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    
-    .custom-play-button svg {
-      width: 40px;
-      height: 40px;
-      fill: #fff;
-    }
-    
-    /* For Safari on iOS */
-    .video-vertical {
-      object-position: center;
-    }
-    
-    @media (max-width: 767px) {
-      .video-background {
-        min-height: 100vh; /* Use viewport height */
-        min-height: calc(var(--vh, 1vh) * 100);
-      }
-    }
-    </style>
 <body>
 <!-- Header with Logo and Navigation -->
 <header class="site-header home-header">
@@ -120,18 +66,12 @@
     <div class="hero-content-wrapper">
         <!-- Video Background -->
         <div class="video-background">
-            <video class="video-horizontal" id="heroVideoHorizontal" loop muted playsinline preload="metadata">
+            <video class="video-horizontal" id="heroVideoHorizontal" autoplay loop muted playsinline preload="auto">
                 <source src="images/WebsiteVideo1.mp4" type="video/mp4">
             </video>
-            <video class="video-vertical" id="heroVideoVertical" loop muted playsinline preload="metadata">
+            <video class="video-vertical" id="heroVideoVertical" autoplay loop muted playsinline preload="auto">
                 <source src="images/WebsiteVertical1.mp4" type="video/mp4">
             </video>
-            <!-- Add a custom play button -->
-<button class="custom-play-button" id="videoPlayButton">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
-        <path d="M8 5v14l11-7z"/>
-    </svg>
-</button>
             <div class="video-overlay"></div>
         </div>
         
@@ -1005,59 +945,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-  const videoHorizontal = document.getElementById('heroVideoHorizontal');
-  const videoVertical = document.getElementById('heroVideoVertical');
-  const playButton = document.getElementById('videoPlayButton');
-  
-  // Determine which video to display based on orientation
-  function setActiveVideo() {
-    const isPortrait = window.innerHeight > window.innerWidth;
-    
-    if (isPortrait) {
-      videoHorizontal.style.display = 'none';
-      videoVertical.style.display = 'block';
-    } else {
-      videoVertical.style.display = 'none';
-      videoHorizontal.style.display = 'block';
-    }
-  }
-  
-  // Function to play the active video
-  function playActiveVideo() {
-    const isPortrait = window.innerHeight > window.innerWidth;
-    const activeVideo = isPortrait ? videoVertical : videoHorizontal;
-    
-    activeVideo.play().then(() => {
-      // Hide play button once video starts playing
-      playButton.style.display = 'none';
-    }).catch(err => {
-      console.error('Error playing video:', err);
-      // Keep play button visible if there was an error
-    });
-  }
-  
-  // Add click event to play button
-  playButton.addEventListener('click', playActiveVideo);
-  
-  // Set the active video on page load
-  setActiveVideo();
-  
-  // Update when orientation changes
-  window.addEventListener('resize', setActiveVideo);
-  window.addEventListener('orientationchange', setActiveVideo);
-  
-  // When video ends, show the play button again (if you want this behavior)
-  videoHorizontal.addEventListener('ended', function() {
-    playButton.style.display = 'flex';
-  });
-  
-  videoVertical.addEventListener('ended', function() {
-    playButton.style.display = 'flex';
-  });
-});
-    </script>
 
 </body>
 

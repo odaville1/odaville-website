@@ -35,8 +35,25 @@
       "dest": "/api/diagnostic.js"
     },
     {
+      "src": "/api/verify-domain",
+      "dest": "/api/verify-domain.js"
+    },
+    {
       "src": "/brochures/(.*)",
       "dest": "/brochures/$1"
+    },
+    {
+      "handle": "filesystem"
+    },
+    {
+      "src": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "admin.odaville.com"
+        }
+      ],
+      "dest": "/admin/admin-login.html"
     },
     {
       "src": "/admin/(.*).html",

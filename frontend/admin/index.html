@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odaville Admin</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            margin: 0;
+            padding: 20px;
+        }
+        .admin-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 30px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 10px;
+        }
+        .info {
+            background-color: #e9f7fe;
+            border-left: 4px solid #2196F3;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .success {
+            background-color: #e7f7e7;
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-container">
+        <h1>Odaville Admin Panel</h1>
+        
+        <div class="success">
+            <strong>Success!</strong> The admin subdomain routing is working correctly.
+        </div>
+        
+        <div class="info">
+            <p>This is a simple page to verify that admin.odaville.com is correctly routing to the admin panel.</p>
+            <p>You can now proceed to the <a href="admin-login.html">admin login page</a>.</p>
+        </div>
+
+        <div id="domain-info">
+            <h2>Domain Information</h2>
+            <p>Loading domain information...</p>
+        </div>
+    </div>
+
+    <script>
+        // Fetch domain information to verify correct routing
+        fetch('/api/verify-domain')
+            .then(response => response.json())
+            .then(data => {
+                const domainInfoElement = document.getElementById('domain-info');
+                
+                let html = '<h2>Domain Information</h2>';
+                html += `<p><strong>Hostname:</strong> ${data.hostname}</p>`;
+                html += `<p><strong>Admin Domain:</strong> ${data.isAdmin ? 'Yes' : 'No'}</p>`;
+                html += `<p><strong>Time:</strong> ${new Date(data.timestamp).toLocaleString()}</p>`;
+                
+                domainInfoElement.innerHTML = html;
+            })
+            .catch(error => {
+                const domainInfoElement = document.getElementById('domain-info');
+                domainInfoElement.innerHTML = `<h2>Domain Information</h2><p>Error: ${error.message}</p>`;
+            });
+    </script>
+</body>
+</html>

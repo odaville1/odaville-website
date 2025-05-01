@@ -9,49 +9,22 @@ const fs = require("fs");
 // Load environment variables
 dotenv.config();
 
-// Import routes
-const { router: authRouter } = require("./routes/auth");
-const galleryRoutes = require("./routes/gallery");
-const blogRoutes = require("./routes/blog");
-const productRoutes = require("./routes/products");
-const brochureRoutes = require('./routes/brochureRoutes');
-
+// Create Express app
 const app = express();
+
+// Log environment for troubleshooting
+console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
+console.log(`Running in ${process.env.NODE_ENV === 'production' ? 'production' : 'development'} mode`);
 
 // Increase payload size limit for file uploads
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// Create uploads directory if it doesn't exist (only in development)
-if (process.env.NODE_ENV !== 'production') {
-  const uploadsDir = path.join(__dirname, "uploads");
-  const blogUploadsDir = path.join(uploadsDir, "blog");
-  const galleryUploadsDir = path.join(uploadsDir, "gallery");
-  const productsUploadsDir = path.join(uploadsDir, "products");
-
-  // Create directories if they don't exist
-  [uploadsDir, blogUploadsDir, galleryUploadsDir, productsUploadsDir].forEach(dir => {
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-  });
-}
-
-// CORS configuration
-const allowedOrigins = process.env.NODE_ENV === 'production' 
-  ? ['https://odaville.com', 'https://www.odaville.com', 'https://admin.odaville.com', 'https://odaville.vercel.app']
-  : ['http://localhost:5000', 'http://localhost:3000'];
-
+// CORS configuration - Start with permissive settings for troubleshooting
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.indexOf(origin) === -1) {
-      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-      return callback(new Error(msg), false);
-    }
-    return callback(null, true);
+    // Allow all origins during troubleshooting
+    callback(null, true);
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
@@ -59,13 +32,33 @@ app.use(cors({
   optionsSuccessStatus: 200,
 }));
 
-// Configure storage based on environment
+// Create uploads directory if not in production
+if (process.env.NODE_ENV !== 'production') {
+  try {
+    const uploadsDir = path.join(__dirname, "uploads");
+    const blogUploadsDir = path.join(uploadsDir, "blog");
+    const galleryUploadsDir = path.join(uploadsDir, "gallery");
+    const productsUploadsDir = path.join(uploadsDir, "products");
+
+    // Create directories if they don't exist
+    [uploadsDir, blogUploadsDir, galleryUploadsDir, productsUploadsDir].forEach(dir => {
+      if (!fs.existsSync(dir)) {
+        fs.mkdirSync(dir, { recursive: true });
+      }
+    });
+  } catch (error) {
+    console.error("Error creating upload directories:", error);
+    // Continue anyway - not critical for API to function
+  }
+}
+
+// In-memory storage for Vercel
+const memoryStorage = multer.memoryStorage();
+// Configure storage to use memory in production, disk in development
 const getStorage = (destination) => {
   if (process.env.NODE_ENV === 'production') {
-    // For Vercel, use memory storage since filesystem access is read-only
-    return multer.memoryStorage();
+    return memoryStorage;
   } else {
-    // For development, use disk storage
     return multer.diskStorage({
       destination: (req, file, cb) => {
         cb(null, path.join(__dirname, 'uploads', destination));
@@ -77,17 +70,13 @@ const getStorage = (destination) => {
   }
 };
 
-// File handlers (for routes that need them)
-// These will be used in your route files
+// File upload middleware instances
 exports.blogUpload = multer({ storage: getStorage('blog') });
 exports.galleryUpload = multer({ storage: getStorage('gallery') });
 exports.productsUpload = multer({ storage: getStorage('products') });
 
 // Serve static files based on environment
-if (process.env.NODE_ENV === 'production') {
-  // In production, static files are handled by Vercel's static file hosting
-  app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-} else {
+if (process.env.NODE_ENV !== 'production') {
   // In development, serve static files locally
   app.use(express.static(path.join(__dirname, "..", "frontend")));
   app.use("/admin", express.static(path.join(__dirname, "..", "frontend", "admin")));
@@ -95,69 +84,215 @@ if (process.env.NODE_ENV === 'production') {
   app.use('/brochures', express.static(path.join(__dirname, '..', 'brochures')));
 }
 
-// Add simple test endpoint for connection testing
+// Add test endpoint that doesn't rely on MongoDB or other services
 app.get("/api/test", (req, res) => {
   res.json({ 
     message: "API connection successful!", 
-    environment: process.env.NODE_ENV || 'development',
-    timestamp: new Date().toISOString()
+    environment: process.env.NODE_ENV || 'unknown',
+    timestamp: new Date().toISOString(),
+    serverInfo: {
+      platform: process.platform,
+      nodeVersion: process.version,
+      memoryUsage: process.memoryUsage()
+    }
   });
 });
 
-// Connect to MongoDB with better error handling
-mongoose
-  .connect(process.env.MONGODB_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => console.log("Connected to MongoDB"))
-  .catch((err) => {
-    console.error("MongoDB connection error:", err);
-    console.log(
-      "Check that MongoDB service is running and connection string is correct."
-    );
-  });
+// Function to lazily connect to MongoDB
+let dbConnection = null;
+const connectToMongoDB = async () => {
+  if (dbConnection) return dbConnection;
+  
+  try {
+    if (!process.env.MONGODB_URI) {
+      console.error("MONGODB_URI environment variable is not set");
+      throw new Error("MongoDB URI not configured");
+    }
 
-// Helper function for file handling in Vercel (serverless)
-// This will be used in your route files
+    // Mongoose connection with reasonable timeouts
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000, // Timeout after 5s instead of 30s
+      socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+      connectTimeoutMS: 10000, // Give up initial connection after 10s
+      retryWrites: true
+    });
+    
+    console.log("Connected to MongoDB");
+    dbConnection = mongoose.connection;
+    return dbConnection;
+  } catch (err) {
+    console.error("MongoDB connection error:", err);
+    // Don't rethrow - let the app continue working with degraded functionality
+    return null;
+  }
+};
+
+// Function to lazily initialize AWS (import only when needed)
+const getS3Client = () => {
+  try {
+    if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY || !process.env.AWS_REGION) {
+      console.warn("AWS credentials not fully configured");
+      // Return null instead of throwing - caller should handle this gracefully
+      return null;
+    }
+    
+    const AWS = require('aws-sdk');
+    return new AWS.S3({
+      accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+      secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+      region: process.env.AWS_REGION
+    });
+  } catch (error) {
+    console.error("Error initializing AWS S3:", error);
+    return null;
+  }
+};
+
+// Helper function for file handling that won't crash if S3 is misconfigured
 exports.saveFileInVercel = async (file, directory) => {
   if (process.env.NODE_ENV === 'production') {
-    // In production, you'd typically use a cloud storage service
-    // For this example, we're just returning a path
-    // In a real app, implement AWS S3 or similar cloud storage
-    const fileName = Date.now() + path.extname(file.originalname);
-    
-    // Return the path that would be used in database
-    return `/uploads/${directory}/${fileName}`;
+    try {
+      const s3 = getS3Client();
+      if (!s3) {
+        console.warn("S3 client not available, returning mock URL");
+        return `/mock-uploads/${directory}/${Date.now()}-${file.originalname}`;
+      }
+
+      const fileName = Date.now() + '-' + Math.round(Math.random() * 1E9);
+      const fileExtension = file.originalname.split('.').pop();
+      const key = `${directory}/${fileName}.${fileExtension}`;
+      
+      await s3.upload({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: key,
+        Body: file.buffer,
+        ContentType: file.mimetype,
+        ACL: 'public-read'
+      }).promise();
+      
+      return `https://${process.env.AWS_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    } catch (error) {
+      console.error("Error saving file to S3:", error);
+      // Return a placeholder URL rather than crashing
+      return `/error-uploads/${directory}/${Date.now()}-${file.originalname}`;
+    }
   } else {
-    // In development, files are already saved by multer disk storage
+    // Development - use local path
     return `/uploads/${directory}/${file.filename}`;
   }
 };
 
-// Routes
+// Import routes (only importing the references, not executing any code yet)
+const { router: authRouter } = require("./routes/auth");
+const galleryRoutes = require("./routes/gallery");
+const blogRoutes = require("./routes/blog");
+const productRoutes = require("./routes/products");
+const brochureRoutes = require('./routes/brochureRoutes');
+
+// Routes - applied lazily after testing connectivity
 app.use("/api/auth", authRouter);
+
+// Connect to DB before applying data-dependent routes
+// Note: this approach still lets the API work even if DB connection fails
+connectToMongoDB().then(() => {
+  console.log("MongoDB connection initialized, setting up routes");
+}).catch(err => {
+  console.warn("MongoDB initialization error, some routes may have limited functionality:", err);
+});
+
+// Apply routes regardless of DB connection status
 app.use("/api/gallery", galleryRoutes);
 app.use("/api/blog", blogRoutes);
 app.use("/api/products", productRoutes);
 app.use('/api/brochure', brochureRoutes);
 
+// Add another test endpoint specifically for checking DB connectivity
+app.get("/api/db-test", async (req, res) => {
+  try {
+    const dbConn = await connectToMongoDB();
+    if (dbConn) {
+      res.json({ 
+        message: "Database connection successful!", 
+        status: "connected",
+        timestamp: new Date().toISOString()
+      });
+    } else {
+      res.status(500).json({ 
+        message: "Database connection failed", 
+        status: "disconnected",
+        timestamp: new Date().toISOString()
+      });
+    }
+  } catch (error) {
+    res.status(500).json({
+      message: "Error checking database connection",
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
+// Add an S3 test endpoint
+app.get("/api/s3-test", async (req, res) => {
+  try {
+    const s3 = getS3Client();
+    if (!s3) {
+      return res.status(500).json({
+        message: "S3 client initialization failed",
+        status: "disconnected", 
+        timestamp: new Date().toISOString()
+      });
+    }
+    
+    // List buckets as a simple test
+    const data = await s3.listBuckets().promise();
+    
+    res.json({
+      message: "S3 connection successful",
+      status: "connected",
+      buckets: data.Buckets.map(b => b.Name),
+      timestamp: new Date().toISOString()
+    });
+  } catch (error) {
+    res.status(500).json({
+      message: "Error connecting to S3",
+      error: error.message,
+      timestamp: new Date().toISOString()
+    });
+  }
+});
+
 // Improved error handling middleware
 app.use((err, req, res, next) => {
-  console.error("Server error:", err.stack);
+  console.error("Server error:", err);
+
+  // Extract useful error info without leaking implementation details
+  const errorResponse = {
+    message: "Something went wrong on the server",
+    errorId: Date.now().toString(36) + Math.random().toString(36).substr(2),
+    timestamp: new Date().toISOString()
+  };
+
+  // Add more details in development
+  if (process.env.NODE_ENV !== 'production') {
+    errorResponse.details = err.message;
+    errorResponse.stack = err.stack;
+  }
 
   if (err instanceof multer.MulterError) {
-    return res.status(400).json({ message: "File upload error: " + err.message });
+    errorResponse.message = "File upload error";
+    errorResponse.details = err.message;
+    return res.status(400).json(errorResponse);
   }
 
   if (err.name === "MongoError" || err.name === "MongoServerError") {
-    return res.status(500).json({ message: "Database error: " + err.message });
+    errorResponse.message = "Database error";
+    return res.status(500).json(errorResponse);
   }
 
-  res.status(500).json({
-    message: "Something went wrong!",
-    error: process.env.NODE_ENV === "development" ? err.message : "Internal server error",
-  });
+  res.status(500).json(errorResponse);
 });
 
 // API routes should be above this line
@@ -177,9 +312,8 @@ if (process.env.NODE_ENV === 'production') {
   });
 }
 
-const PORT = process.env.PORT || 5000;
-
-// Only start the server if not being imported by Vercel
+// Start server locally in development mode
+const PORT = process.env.PORT || 3000;
 if (process.env.NODE_ENV !== 'production') {
   app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
@@ -187,5 +321,5 @@ if (process.env.NODE_ENV !== 'production') {
   });
 }
 
-// Export the app for Vercel serverless function
+// Export the Express app for Vercel serverless function
 module.exports = app;

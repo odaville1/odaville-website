@@ -1,0 +1,20 @@
+# Ignore node_modules at project root
+node_modules
+# Ignore any development files
+.env
+.env.local
+# Ignore logs
+*.log
+# Ignore git files
+.git
+.gitignore
+# Ignore test files
+tests
+# Ignore backend's node_modules when deploying frontend
+# but allow backend/package.json to be included
+backend/node_modules
+# Don't ignore these
+!backend/server.js
+!backend/routes
+!backend/models
+!backend/utils

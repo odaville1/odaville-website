@@ -1,19 +1,14 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "backend/server.js",
-      "use": "@vercel/node"
-    },
-    {
-      "src": "frontend/**/*",
-      "use": "@vercel/static"
-    },
-    {
-      "src": "brochures/**/*",
-      "use": "@vercel/static"
+  "buildCommand": "npm run build",
+  "installCommand": "npm install",
+  "outputDirectory": "frontend",
+  "functions": {
+    "backend/server.js": {
+      "memory": 1024,
+      "maxDuration": 10
     }
-  ],
+  },
   "routes": [
     {
       "src": "/api/(.*)",
@@ -29,23 +24,23 @@
     },
     {
       "src": "/admin/(.*).html",
-      "dest": "/frontend/admin/$1.html"
+      "dest": "/admin/$1.html"
     },
     {
       "src": "/admin/(.*)",
-      "dest": "/frontend/admin/$1"
+      "dest": "/admin/$1"
     },
     {
       "src": "/(.*)\\.html",
-      "dest": "/frontend/$1.html"
+      "dest": "/$1.html"
     },
     {
       "src": "/(.*)\\.(js|css|jpg|jpeg|png|gif|svg|ico|webp|ttf|woff|woff2|otf)",
-      "dest": "/frontend/$1.$2"
+      "dest": "/$1.$2"
     },
     {
       "src": "/(.*)",
-      "dest": "/frontend/index.html"
+      "dest": "/index.html"
     }
   ]
 }

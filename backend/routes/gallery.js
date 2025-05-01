@@ -1,21 +1,12 @@
+// backend/routes/gallery.js
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
 const Gallery = require("../models/Gallery");
 const { auth } = require("./auth");
 
-// Configure multer for image upload
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/gallery");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage });
+// Import S3 upload utility
+const { uploadToS3 } = require('../utils/s3-upload');
+const upload = uploadToS3('gallery');
 
 // Get all gallery items
 router.get("/", async (req, res) => {
@@ -31,7 +22,13 @@ router.get("/", async (req, res) => {
 router.post("/", auth, upload.single("image"), async (req, res) => {
   try {
     const { title, description, category, isFeatured } = req.body;
-    const imageUrl = req.file ? `/uploads/gallery/${req.file.filename}` : null;
+    
+    // Get image URL from S3
+    const imageUrl = req.file ? req.file.location : null;
+
+    if (!imageUrl) {
+      return res.status(400).json({ message: "Image is required for gallery items" });
+    }
 
     const galleryItem = new Gallery({
       title,
@@ -59,8 +56,9 @@ router.put("/:id", auth, upload.single("image"), async (req, res) => {
       isFeatured: isFeatured === "true",
     };
 
+    // Only update the image if a new one is uploaded
     if (req.file) {
-      updateData.imageUrl = `/uploads/gallery/${req.file.filename}`;
+      updateData.imageUrl = req.file.location;
     }
 
     const galleryItem = await Gallery.findByIdAndUpdate(

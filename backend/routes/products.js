@@ -1,21 +1,12 @@
+// backend/routes/products.js
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
 const Product = require("../models/Product");
 const { auth } = require("./auth");
 
-// Configure multer for image upload
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/products");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage });
+// Import S3 upload utility
+const { uploadToS3 } = require('../utils/s3-upload');
+const upload = uploadToS3('products');
 
 // Get all products or filtered by category
 router.get("/", async (req, res) => {
@@ -53,9 +44,10 @@ router.get("/:id", async (req, res) => {
 // Create new product
 router.post("/", auth, upload.single("image"), async (req, res) => {
   try {
-    const { title, subtitle, description, category, featured, order } =
-      req.body;
-    const imageUrl = req.file ? `/uploads/products/${req.file.filename}` : null;
+    const { title, subtitle, description, category, featured, order } = req.body;
+    
+    // Get image URL from S3
+    const imageUrl = req.file ? req.file.location : null;
 
     if (!imageUrl) {
       return res.status(400).json({ message: "Product image is required" });
@@ -81,8 +73,7 @@ router.post("/", auth, upload.single("image"), async (req, res) => {
 // Update product
 router.put("/:id", auth, upload.single("image"), async (req, res) => {
   try {
-    const { title, subtitle, description, category, featured, order } =
-      req.body;
+    const { title, subtitle, description, category, featured, order } = req.body;
     const updateData = {
       title,
       subtitle,
@@ -92,8 +83,9 @@ router.put("/:id", auth, upload.single("image"), async (req, res) => {
       order: order ? parseInt(order) : 0,
     };
 
+    // Only update the image if a new one is uploaded
     if (req.file) {
-      updateData.imageUrl = `/uploads/products/${req.file.filename}`;
+      updateData.imageUrl = req.file.location;
     }
 
     const product = await Product.findByIdAndUpdate(req.params.id, updateData, {

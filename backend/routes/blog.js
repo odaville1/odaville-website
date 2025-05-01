@@ -1,21 +1,12 @@
+// backend/routes/blog.js
 const express = require("express");
 const router = express.Router();
-const multer = require("multer");
-const path = require("path");
 const Blog = require("../models/Blog");
 const auth = require("./auth").auth;
 
-// Configure multer for image upload
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/blog");
-  },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname));
-  },
-});
-
-const upload = multer({ storage });
+// Import S3 upload utility
+const { uploadToS3 } = require('../utils/s3-upload');
+const upload = uploadToS3('blog');
 
 // Get all blog posts
 router.get("/", async (req, res) => {
@@ -51,9 +42,11 @@ router.get("/:id", async (req, res) => {
 router.post("/", auth, upload.single("image"), async (req, res) => {
   try {
     const { title, content, author, category, tags, isPublished } = req.body;
-    const imageUrl = req.file ? `/uploads/blog/${req.file.filename}` : null;
+    
+    // Get image URL from S3 (if an image was uploaded)
+    const imageUrl = req.file ? req.file.location : null;
 
-    // FIX: Correctly convert isPublished string value from form to boolean
+    // Convert isPublished string value from form to boolean
     const publishStatus = isPublished === "published";
 
     const blog = new Blog({
@@ -79,7 +72,7 @@ router.put("/:id", auth, upload.single("image"), async (req, res) => {
   try {
     const { title, content, author, category, tags, isPublished } = req.body;
 
-    // FIX: Correctly convert isPublished string value from form to boolean
+    // Convert isPublished string value from form to boolean
     const publishStatus = isPublished === "published";
 
     const updateData = {
@@ -91,8 +84,9 @@ router.put("/:id", auth, upload.single("image"), async (req, res) => {
       isPublished: publishStatus,
     };
 
+    // Only update the image if a new one is uploaded
     if (req.file) {
-      updateData.imageUrl = `/uploads/blog/${req.file.filename}`;
+      updateData.imageUrl = req.file.location;
     }
 
     // Set publishedAt date if newly published

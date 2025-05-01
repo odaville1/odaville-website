@@ -1,0 +1,38 @@
+name: Deploy Main Website
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'frontend/**'
+      - 'backend/**'
+      - '!frontend/admin/**'
+      - '.github/workflows/main-website.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Install Vercel CLI
+        run: npm install -g vercel@latest
+        
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+        
+      - name: Build Project Artifacts
+        run: |
+          npm install
+          npm run build
+          
+      - name: Deploy to Vercel
+        run: vercel deploy --prod --token=${{ secrets.VERCEL_TOKEN }}
+        env:
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          NODE_ENV: production
+          FRONTEND_URL: https://odaville.com
+          ADMIN_URL: https://admin.odaville.com
+          JWT_SECRET: ${{ secrets.JWT_SECRET }} 

@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Odaville Admin Panel</title>
+
+    <!-- Authentication Check - Must be first -->
+    <script>
+      // Check if user is authenticated in either localStorage or sessionStorage
+      const token = localStorage.getItem('token') || sessionStorage.getItem('token');
+      if (!token) {
+        console.log('No token found, redirecting to login');
+        window.location.href = 'admin-login.html';
+      }
+
+      // Check token expiration
+      const userStr = localStorage.getItem('user') || sessionStorage.getItem('user');
+      const user = userStr ? JSON.parse(userStr) : {};
+      
+      // Check if login time is expired (24 hours)
+      if (user.loginTime && (Date.now() - user.loginTime > 24 * 60 * 60 * 1000)) {
+        console.log('Token expired, redirecting to login');
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        sessionStorage.removeItem('token');
+        sessionStorage.removeItem('user');
+        window.location.href = 'admin-login.html';
+      }
+    </script>
+
+    <!-- WebSocket Connection Fix - Must be after auth check -->
+    <script>
+      // Prevent WebSocket connection issues
+      (function () {
+        // Fix WDS errors by adding event listeners that prevent connection timeout
+        window.addEventListener(
+          "error",
+          function (event) {
+            if (
+              event.message &&
+              (event.message.includes("WDS") ||
+                event.message.includes("WebSocket"))
+            ) {
+              console.warn("Suppressed WebSocket error");
+              event.preventDefault();
+              event.stopPropagation();
+            }
+          },
+          true
+        );
+
+        // Suppress unhandled promise rejections
+        window.addEventListener("unhandledrejection", function (event) {
+          if (
+            event.reason &&
+            event.reason.message &&
+            (event.reason.message.includes("WDS") ||
+              event.reason.message.includes("WebSocket"))
+          ) {
+            console.warn("Suppressed WebSocket promise rejection");
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        });
+
+        // Force websocket reconnection
+        const checkAndReconnect = function () {
+          const wdsSocket =
+            window.___browserSync___ && window.___browserSync___.socket;
+          if (wdsSocket && wdsSocket.disconnected) {
+            console.log("Attempting to reconnect WebSocket...");
+            wdsSocket.connect();
+          }
+        };
+
+        // Check connection every 5 seconds
+        setInterval(checkAndReconnect, 5000);
+      })();
+    </script>
+
+    <!-- Regular styles and scripts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/admin-styles.css" />
+    <link rel="stylesheet" href="./css/brochure-admin.css">
+
+    <!-- Add offline support script -->
+    <script>
+      // Add offline detection
+      window.isOffline = false;
+      window.addEventListener("online", function () {
+        window.isOffline = false;
+        document.body.classList.remove("offline-mode");
+        console.log("Back online");
+      });
+
+      window.addEventListener("offline", function () {
+        window.isOffline = true;
+        document.body.classList.add("offline-mode");
+        console.log("Offline mode activated");
+      });
+    </script>
+
+    <!-- Add TinyMCE -->
+    <script src="https://cdn.tiny.cloud/1/e0jdsv70ua6h4gkbxsavul1zhnc675cyjou9a6zajh04kw6b/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+  </head>
+  <body>
+    <div class="admin-container">
+      <!-- Offline mode banner -->
+      <div
+        id="offline-banner"
+        style="
+          display: none;
+          background-color: #fff3cd;
+          color: #856404;
+          text-align: center;
+          padding: 10px;
+          margin-bottom: 15px;
+        "
+      >
+        You are currently in offline mode. Some features may be limited.
+        <button
+          onclick="window.location.reload()"
+          style="
+            background: #856404;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            margin-left: 10px;
+            cursor: pointer;
+          "
+        >
+          Reconnect
+        </button>
+      </div>
+
+      <!-- Sidebar Navigation -->
+      <div class="sidebar">
+        <div class="logo">
+          <img src="../images/Layer 2.png" alt="Odaville Logo" />
+        </div>
+
+        <nav class="admin-nav">
+          <ul>
+            <li><a href="#" class="active" data-section="dashboard">Dashboard</a></li>
+            <li><a href="#" data-section="blog-manage">Manage Blog Posts</a></li>
+            <li><a href="#" data-section="gallery-manage">Manage Gallery</a></li>
+            <!-- <li><a href="#" data-section="products-manage">Manage Products</a></li> -->
+            <li><a href="#" data-section="brochure-requests">Brochure Requests</a></li>
+            <li><a href="../index.html" target="_blank">View Website</a></li>
+            <li><a href="#" id="logout-btn">Logout</a></li>
+          </ul>
+        </nav>
+      </div>
+
+      <!-- Main Content Area -->
+      <div class="content-area">
+        <!-- API Connection Error Banner (hidden by default) -->
+        <div id="api-error" class="api-error-alert" style="display: none">
+          <strong>API Connection Error</strong>
+          <p id="api-error-message">
+            Unable to connect to the server. Please check if the server is
+            running.
+          </p>
+          <button id="retry-connection" class="retry-btn">
+            Retry Connection
+          </button>
+        </div>
+
+        <!-- Dashboard Section -->
+        <section id="dashboard" class="admin-section active">
+          <div class="section-header">
+            <h1>Dashboard</h1>
+            <p class="date-display" id="current-date"></p>
+          </div>
+
+          <div class="dashboard-stats">
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                  <path
+                    d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"
+                  ></path>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <h3>Total Blog Posts</h3>
+                <p class="stat-value" id="blog-count">-</p>
+              </div>
+            </div>
+
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
+                  <circle cx="8.5" cy="8.5" r="1.5"></circle>
+                  <polyline points="21 15 16 10 5 21"></polyline>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <h3>Gallery Items</h3>
+                <p class="stat-value" id="gallery-count">-</p>
+              </div>
+            </div>
+
+            <!-- <div class="stat-card">
+              <div class="stat-icon">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"
+                  ></path>
+                  <line x1="3" y1="6" x2="21" y2="6"></line>
+                  <path d="M16 10a4 4 0 0 1-8 0"></path>
+                </svg>
+              </div>
+              <div class="stat-info">
+                <h3>Products</h3>
+                <p class="stat-value" id="product-count">-</p>
+              </div>
+            </div> -->
+          </div>
+
+          <div class="section-header">
+            <h2>Recent Content</h2>
+          </div>
+
+          <div class="recent-content">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Type</th>
+                  <th>Date</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="recent-content-table">
+                <!-- Content loaded dynamically -->
+                <tr>
+                  <td colspan="4" class="text-center">
+                    <div class="loading-indicator">
+                      <div class="loading-spinner"></div>
+                      <span>Loading recent content...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <!-- Blog Management Section -->
+        <section id="blog-manage" class="admin-section">
+          <div class="section-header">
+            <h1>Manage Blog Posts</h1>
+            <button class="add-new-btn" id="add-blog-btn">Add New Post</button>
+          </div>
+
+          <div class="admin-content">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="blog-table">
+                <!-- Blog posts loaded dynamically -->
+                <tr>
+                  <td colspan="4" class="text-center">
+                    <div class="loading-indicator">
+                      <div class="loading-spinner"></div>
+                      <span>Loading blog posts...</span>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Blog Post Form -->
+          <form id="blog-post-form" class="admin-form" enctype="multipart/form-data">
+            <input type="hidden" id="blog-id" name="id">
+            <div class="form-group">
+              <label for="blog-title">Title</label>
+              <input type="text" id="blog-title" name="title" required>
+            </div>
+            <div class="form-group">
+              <label for="blog-content">Content</label>
+              <textarea id="blog-content" name="content" rows="20" required></textarea>
+            </div>
+            <div class="form-group">
+              <label for="blog-author">Author</label>
+              <input type="text" id="blog-author" name="author" required>
+            </div>
+            <div class="form-group">
+              <label for="blog-featured-image">Featured Image</label>
+              <input type="file" id="blog-featured-image" name="image" accept="image/*">
+              <img id="blog-image-preview" style="display: none; max-width: 200px; margin-top: 10px;">
+            </div>
+            <div class="form-group">
+              <label for="blog-status">Status</label>
+              <select id="blog-status" name="isPublished">
+                <option value="draft">Draft</option>
+                <option value="published">Published</option>
+              </select>
+            </div>
+            <div class="form-actions">
+              <button type="submit" class="save-btn">Save Post</button>
+              <button type="button" class="cancel-btn">Cancel</button>
+            </div>
+          </form>
+        </section>
+
+        <!-- Gallery Management Section -->
+        <section id="gallery-manage" class="admin-section">
+          <div class="section-header">
+            <h1>Manage Gallery</h1>
+            <button class="add-new-btn" id="add-gallery-btn">Add New Item</button>
+          </div>
+
+          <div class="admin-content">
+            <div id="admin-gallery-grid" class="gallery-grid">
+              <!-- Gallery items loaded dynamically -->
+              <div class="loading-indicator">
+                <div class="loading-spinner"></div>
+                <span>Loading gallery items...</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Gallery Item Form -->
+          <div id="gallery-form-container" class="form-container" style="display: none;">
+            <form id="gallery-item-form" class="admin-form" enctype="multipart/form-data">
+              <div class="form-header">
+                <h2 id="gallery-form-title">Add New Gallery Item</h2>
+                <button type="button" class="close-form-btn">&times;</button>
+              </div>
+              
+              <input type="hidden" id="gallery-id" name="id">
+              
+              <div class="form-group">
+                <label for="gallery-title">Title</label>
+                <input type="text" id="gallery-title" name="title" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="gallery-description">Description</label>
+                <textarea id="gallery-description" name="description" rows="4"></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label for="gallery-category">Category</label>
+                <select id="gallery-category" name="category" required>
+                  <option value="residential">Residential</option>
+                  <option value="commercial">Commercial</option>
+                  <option value="architectural">Architectural</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="gallery-image">Image</label>
+                <div class="image-upload-container">
+                  <input type="file" id="gallery-image" name="image" accept="image/*" required>
+                  <div class="image-preview-container">
+                    <img id="gallery-image-preview" style="display: none; max-width: 200px; margin-top: 10px;">
+                  </div>
+                  <small class="form-text text-muted">Please select an image file (JPG, PNG, or GIF)</small>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="gallery-featured" name="isFeatured">
+                  Featured Item
+                </label>
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="save-btn">Save Item</button>
+                <button type="button" class="cancel-btn">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+        <!-- Products Management Section -->
+        <section id="products-manage" class="admin-section">
+          <div class="section-header">
+            <h1>Manage Products</h1>
+            <button class="add-new-btn" id="add-product-btn">Add New Product</button>
+          </div>
+
+          <div class="admin-content">
+            <table class="admin-table">
+              <thead>
+                <tr>
+                  <th>Image</th>
+                  <th>Title</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="products-table">
+                <!-- Products will be loaded dynamically -->
+                <tr>
+                  <td colspan="5" class="text-center">Loading products...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Product Form -->
+          <div id="product-form-container" class="form-container" style="display: none;">
+            <form id="product-form" class="admin-form" enctype="multipart/form-data">
+              <div class="form-header">
+                <h2 id="product-form-title">Add New Product</h2>
+                <button type="button" class="close-form-btn">&times;</button>
+              </div>
+              
+              <input type="hidden" id="product-id" name="id">
+              
+              <div class="form-group">
+                <label for="product-title">Title</label>
+                <input type="text" id="product-title" name="title" required>
+              </div>
+              
+              <div class="form-group">
+                <label for="product-subtitle">Subtitle</label>
+                <input type="text" id="product-subtitle" name="subtitle">
+              </div>
+              
+              <div class="form-group">
+                <label for="product-description">Description</label>
+                <textarea id="product-description" name="description" rows="4"></textarea>
+              </div>
+              
+              <div class="form-group">
+                <label for="product-category">Category</label>
+                <select id="product-category" name="category" required>
+                  <option value="windows">Windows & Glass</option>
+                  <option value="doors">Door Systems</option>
+                  <option value="signature">Signature Series</option>
+                  <option value="architectural">Architectural Elements</option>
+                </select>
+              </div>
+              
+              <div class="form-group">
+                <label for="product-image">Image</label>
+                <div class="image-upload-container">
+                  <input type="file" id="product-image" name="image" accept="image/*" required>
+                  <div class="image-preview-container">
+                    <img id="product-image-preview" style="display: none; max-width: 200px; margin-top: 10px;">
+                  </div>
+                  <small class="form-text text-muted">Please select an image file (JPG, PNG, or GIF)</small>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="checkbox-label">
+                  <input type="checkbox" id="product-featured" name="featured">
+                  Featured Product
+                </label>
+              </div>
+              
+              <div class="form-group">
+                <label for="product-order">Display Order</label>
+                <input type="number" id="product-order" name="order" value="0" min="0">
+              </div>
+              
+              <div class="form-actions">
+                <button type="submit" class="save-btn">Save Product</button>
+                <button type="button" class="cancel-btn">Cancel</button>
+              </div>
+            </form>
+          </div>
+        </section>
+
+
+
+<!-- Add this new section after your other sections -->
+<section id="brochure-requests" class="admin-section">
+
+
+  <div class="requests-container">
+    <div class="requests-header">
+      <h2>Manage Brochure Requests</h2>
+      <button id="refreshRequests" class="refresh-btn">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 4v6h-6"></path>
+          <path d="M1 20v-6h6"></path>
+          <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+        </svg>
+        Refresh
+      </button>
+    </div>
+
+    <div class="filters">
+      <select class="filter-select" id="statusFilter">
+        <option value="all">All Status</option>
+        <option value="pending">Pending</option>
+        <option value="sent">Sent</option>
+        <option value="failed">Failed</option>
+      </select>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search by name or email">
+    </div>
+
+    <table class="requests-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Phone</th>
+          <th>Request Date</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="requestsTableBody">
+        <!-- Table content will be dynamically populated -->
+        <tr>
+          <td colspan="6" class="text-center">Loading requests...</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+      </div>
+    </div>
+
+    <!-- Confirmation Dialog -->
+    <div class="confirmation-dialog" id="confirm-dialog">
+      <!-- Dialog content remains the same -->
+    </div>
+
+    <!-- Scripts -->
+    <script>
+      document.addEventListener("DOMContentLoaded", function () {
+        // Show the current date
+        const dateDisplay = document.getElementById("current-date");
+        if (dateDisplay) {
+          const now = new Date();
+          dateDisplay.textContent = now.toLocaleDateString("en-US", {
+            weekday: "long",
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          });
+        }
+
+        // Add retry button functionality
+        const retryBtn = document.getElementById("retry-connection");
+        if (retryBtn) {
+          retryBtn.addEventListener("click", function () {
+            window.location.reload();
+          });
+        }
+
+        // Check offline status initially
+        if (!navigator.onLine) {
+          const banner = document.getElementById("offline-banner");
+          if (banner) banner.style.display = "block";
+          document.body.classList.add("offline-mode");
+        }
+      });
+
+      // Handle offline/online events
+      window.addEventListener("online", function () {
+        const banner = document.getElementById("offline-banner");
+        if (banner) banner.style.display = "none";
+        window.location.reload();
+      });
+
+      window.addEventListener("offline", function () {
+        const banner = document.getElementById("offline-banner");
+        if (banner) banner.style.display = "block";
+      });
+    </script>
+    
+    <!-- Load admin script -->
+    <script src="js/admin.js"></script>
+    <script src="js/blog-form-fix.js"></script>
+    <script src="./js/brochure-admin.js"></script>
+  </body>
+</html>

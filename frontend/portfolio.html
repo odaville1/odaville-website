@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://localhost:5000 http://localhost:8080; img-src 'self' http://localhost:5000 http://localhost:8080 data:; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portfolio - Odaville</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/portfolio-styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Header with Logo and Navigation -->
+    <header class="site-header">
+        <div class="header-container">
+            <div class="logo">
+                <a href="index.html">
+                    <img src="images/Layer 2.png" alt="Odaville">
+                </a>
+            </div>
+            
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="index.html#hero-section">Home</a></li>
+                    <li><a href="index.html#about-section">About Us</a></li>
+                    <li><a href="index.html#services-section">Services</a></li>
+                    <li><a href="index.html#products">Products</a></li>
+                    <li><a href="index.html#gallery">Gallery</a></li>
+                    <li><a href="index.html#blog">Blog</a></li>
+                    <li><a href="index.html#contact">Contact Us</a></li>
+                </ul>
+            </nav>
+            
+            <!-- Hamburger Menu for Mobile -->
+            <div class="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Portfolio Section -->
+    <section class="portfolio-section">
+        <div class="portfolio-container">
+            <div class="services-header animate-on-scroll">
+                <h2 class="services-title">Our Portfolio</h2>
+                <p class="services-subtitle">Showcasing Our Complete Collection</p>
+            </div>
+
+            <!-- Portfolio Filter -->
+            <div class="portfolio-filter animate-on-scroll">
+                <button class="portfolio-filter-button active" data-category="all">All Projects</button>
+                <button class="portfolio-filter-button" data-category="residential">Residential</button>
+                <button class="portfolio-filter-button" data-category="commercial">Commercial</button>
+                <button class="portfolio-filter-button" data-category="signature">Signature Series</button>
+            </div>
+
+            <!-- Portfolio Grid -->
+            <div class="portfolio-grid animate-on-scroll">
+                <!-- Portfolio items will be dynamically loaded here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer Section -->
+    <footer class="footer-section">
+        <!-- Copy the footer content from index.html -->
+    </footer>
+
+    <script src="./js/hamburger-menu.js"></script>
+    <script src="./js/portfolio.js"></script>
+</body>
+</html> 

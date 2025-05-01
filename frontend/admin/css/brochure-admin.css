@@ -1,0 +1,217 @@
+/* Brochure Requests Admin Styles */
+.requests-container {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.requests-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.requests-header h2 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.refresh-btn {
+    display: inline-flex;
+    align-items: center;
+    background-color: #f5f5f5;
+    border: none;
+    border-radius: 4px;
+    padding: 8px 15px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.refresh-btn:hover {
+    background-color: #e9e9e9;
+}
+
+.refresh-btn svg {
+    margin-right: 5px;
+}
+
+.requests-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+.requests-table th,
+.requests-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.requests-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.requests-table tr:hover {
+    background-color: #f5f5f5;
+}
+
+.status-badge {
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    display: inline-block;
+    text-align: center;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.status-sent {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-failed {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+/* Action buttons styling fix */
+.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 12px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    margin-right: 5px;
+    color: white;
+    text-align: center;
+    min-width: 80px;
+    height: 36px;
+  }
+  
+  .send-btn {
+    background-color: #28a745;
+  }
+  
+  .send-btn:hover {
+    background-color: #218838;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  .delete-btn {
+    background-color: #dc3545;
+  }
+  
+  .delete-btn:hover {
+    background-color: #c82333;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  
+  /* Fix for icon alignment if you're using icons */
+  .action-btn i, 
+  .action-btn svg {
+    margin-right: 5px;
+  }
+.filters {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.filter-select {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-width: 150px;
+}
+
+.search-input {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-width: 200px;
+    flex-grow: 1;
+}
+
+.no-requests {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.text-center {
+    text-align: center;
+}
+
+.error {
+    color: #dc3545;
+}
+
+/* Responsive styles */
+@media (max-width: 992px) {
+    .requests-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+    
+    .filters {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .requests-table {
+        display: block;
+        overflow-x: auto;
+    }
+    
+    .filters {
+        flex-direction: column;
+        gap: 10px;
+    }
+    
+    .filter-select, 
+    .search-input {
+        width: 100%;
+    }
+    
+    .action-btn {
+        padding: 5px 10px;
+        font-size: 12px;
+    }
+}
+
+@media (max-width: 576px) {
+    .requests-container {
+        padding: 15px;
+    }
+    
+    .requests-table th,
+    .requests-table td {
+        padding: 8px;
+        font-size: 14px;
+    }
+    
+    .status-badge {
+        padding: 4px 8px;
+        font-size: 11px;
+    }
+}

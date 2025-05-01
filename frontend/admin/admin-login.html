@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Odaville Admin Login</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/admin-styles.css" />
+    <style>
+      :root {
+        --primary-color: #ca8355;
+        --primary-hover: #b57248;
+        --text-dark: #333;
+        --text-medium: #666;
+        --bg-light: #f8f9fa;
+        --border-color: #dee2e6;
+        --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.05);
+        --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px rgba(0, 0, 0, 0.1);
+        --border-radius: 6px;
+        --transition: all 0.3s ease;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Montserrat", sans-serif;
+        background-color: #f7f7f9;
+        background-image: linear-gradient(
+            rgba(0, 0, 0, 0.6),
+            rgba(0, 0, 0, 0.6)
+          ),
+          url("../images/A1.jpg");
+        background-size: cover;
+        background-position: center;
+        color: var(--text-dark);
+        line-height: 1.6;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+
+      .login-container {
+        width: 100%;
+        max-width: 400px;
+        background-color: #fff;
+        border-radius: var(--border-radius);
+        box-shadow: var(--shadow-lg);
+        padding: 40px;
+        animation: fadeIn 0.5s ease;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .logo {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .logo img {
+        max-width: 180px;
+      }
+
+      h1 {
+        font-size: 1.8rem;
+        font-weight: 600;
+        text-align: center;
+        margin-bottom: 30px;
+        color: var(--text-dark);
+      }
+
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 500;
+        color: var(--text-dark);
+      }
+
+      .form-group input {
+        width: 100%;
+        padding: 12px 15px;
+        border: 1px solid var(--border-color);
+        border-radius: var(--border-radius);
+        font-family: inherit;
+        font-size: 0.95rem;
+        color: var(--text-dark);
+        transition: var(--transition);
+      }
+
+      .form-group input:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(202, 131, 85, 0.1);
+      }
+
+      .password-input {
+        position: relative;
+      }
+
+      .toggle-password {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-medium);
+        cursor: pointer;
+      }
+
+      .checkbox-label {
+        display: flex;
+        align-items: center;
+        font-size: 0.9rem;
+        color: var(--text-medium);
+        cursor: pointer;
+      }
+
+      .checkbox-label input {
+        margin-right: 10px;
+      }
+
+      .login-btn {
+        display: block;
+        width: 100%;
+        padding: 12px 15px;
+        background-color: var(--primary-color);
+        color: #fff;
+        border: none;
+        border-radius: var(--border-radius);
+        font-weight: 600;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: var(--transition);
+        margin-top: 30px;
+      }
+
+      .login-btn:hover {
+        background-color: var(--primary-hover);
+      }
+
+      .alert {
+        padding: 10px 15px;
+        border-radius: var(--border-radius);
+        margin-bottom: 20px;
+        font-size: 0.9rem;
+        display: none;
+      }
+
+      .alert-danger {
+        background-color: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+
+      .remember-me {
+        display: flex;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .remember-me input {
+        margin-right: 10px;
+      }
+
+      .forgot-password {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .forgot-password a {
+        color: var(--text-medium);
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: var(--transition);
+      }
+
+      .forgot-password a:hover {
+        color: var(--primary-color);
+      }
+
+      .back-to-site {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border-color);
+      }
+
+      .back-to-site a {
+        color: var(--text-medium);
+        text-decoration: none;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        transition: var(--transition);
+      }
+
+      .back-to-site a:hover {
+        color: var(--primary-color);
+      }
+
+      .back-to-site a svg {
+        margin-right: 8px;
+      }
+
+      @media (max-width: 480px) {
+        .login-container {
+          padding: 30px 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-container">
+      <div class="login-box">
+        <div class="logo">
+          <img src="../images/Layer 2.png" alt="Odaville Logo" />
+        </div>
+        <h1>Admin Login</h1>
+        <div id="login-alert" class="alert alert-danger" style="display: none"></div>
+        <form id="login-form">
+          <div class="form-group">
+            <label for="username">Username</label>
+            <input
+              type="text"
+              id="username"
+              name="username"
+              required
+              autocomplete="username"
+            />
+          </div>
+          <div class="form-group">
+            <label for="password">Password</label>
+            <div class="password-input">
+              <input
+                type="password"
+                id="password"
+                name="password"
+                required
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                id="toggle-password"
+                aria-label="Toggle password visibility"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                >
+                  <path
+                    d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"
+                  ></path>
+                  <circle cx="12" cy="12" r="3"></circle>
+                </svg>
+              </button>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="remember" name="remember" />
+              Remember me
+            </label>
+          </div>
+          <button type="submit" class="login-btn">Login</button>
+        </form>
+      </div>
+    </div>
+    <script src="js/login.js"></script>
+  </body>
+</html>

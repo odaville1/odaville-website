@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <!-- Updated Content Security Policy to allow Leaflet -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; connect-src 'self' http://localhost:5000 http://localhost:8080 https://*.tile.openstreetmap.org; img-src 'self' http://localhost:5000 http://localhost:8080 data: https://*.tile.openstreetmap.org; script-src 'self' 'unsafe-inline' https://unpkg.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://unpkg.com; font-src 'self' https://fonts.gstatic.com;">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Odaville - Limitless Views Crafted</title>
+    <link rel="stylesheet" href="./css/styles.css">
+    <link rel="stylesheet" href="./css/blog-styles.css">
+    <link rel="stylesheet" href="./css/gallery-styles.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="js/products.js" defer></script>
+    <script src="js/navbar.js" defer></script>
+</head>
+<body>
+<!-- Header with Logo and Navigation -->
+<header class="site-header">
+    <div class="header-container">
+        <div class="logo" >
+
+            <img src="images/Layer 2.png" alt="Odaville">
+        </a>
+        </div>
+        
+        <nav class="main-nav">
+            <ul>
+                <li><a href="#hero-section" class="active">Home</a></li>
+                <li><a href="#about-section">About Us</a></li>
+                <li><a href="#services-section">Services</a></li>
+                <li><a href="#products">Products</a></li>
+                <li><a href="#gallery">Gallery</a></li>
+                <li><a href="#blog">Blog</a></li>
+                <li><a href="#contact">Contact Us</a></li>
+            </ul>
+        </nav>
+        
+        <!-- Hamburger Menu for Mobile -->
+        <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+        </div>
+    </div>
+</header>
+
+<!-- Mobile Navigation (add close button here) -->
+<div class="mobile-nav">
+    <button class="mobile-nav-close" aria-label="Close Menu">&times;</button>
+    <ul>
+        <li><a href="#hero-section" class="active">Home</a></li>
+        <li><a href="#about-section">About Us</a></li>
+        <li><a href="#services-section">Services</a></li>
+        <li><a href="#products">Products</a></li>
+        <li><a href="#gallery">Gallery</a></li>
+        <li><a href="#blog">Blog</a></li>
+        <li><a href="#contact">Contact Us</a></li>
+    </ul>
+</div>
+
+<!-- Main Hero Section -->
+<section class="hero-container" id="hero-section">
+    <div class="hero-content-wrapper">
+        <!-- Video Background -->
+        <div class="video-background">
+            <video class="video-horizontal" id="heroVideoHorizontal" autoplay loop muted playsinline preload="auto">
+                <source src="images/Video2.mp4" type="video/mp4">
+            </video>
+            <video class="video-vertical" id="heroVideoVertical" autoplay loop muted playsinline preload="auto">
+                <source src="images/Video2-Vertical.mp4" type="video/mp4">
+            </video>
+            <div class="video-overlay"></div>
+        </div>
+        
+        <div class="hero-content">
+            <p class="hero-description">
+            Limitless Views Crafted
+            </p>
+            <!-- <p class="hero-subtitle">
+                We create portals.
+
+                
+            </p> -->
+            
+            <!-- CTA Button -->
+            <div class="cta-container">
+                <!-- SVG Button Shape -->
+                <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="280" height="71" viewBox="0 0 280 71" class="button-shape">
+                    <defs>
+                        <filter id="Rectangle_10" x="0" y="0" width="280" height="280" filterUnits="userSpaceOnUse">
+                            <feOffset dx="7" dy="7" input="SourceAlpha"/>
+                            <feGaussianBlur stdDeviation="2.5" result="blur"/>
+                            <feFlood flood-opacity="0.161"/>
+                            <feComposite operator="in" in2="blur"/>
+                            <feComposite in="SourceGraphic"/>
+                        </filter>
+                    </defs>
+                    <g transform="matrix(1, 0, 0, 1, 0, 0)" filter="url(#Rectangle_10)">
+                        <path id="Rectangle_10-2" data-name="Rectangle 10" d="M56,0H265a0,0,0,0,1,0,0V0a56,56,0,0,1-56,56H0a0,0,0,0,1,0,0v0A56,56,0,0,1,56,0Z" transform="translate(0.5 0.5)" fill="#d8a25b"/>
+                    </g>
+                </svg>
+                <a href="#" class="cta-button">Request Brochure <span class="arrow">›</span></a>
+            </div>
+        </div>
+        
+        <!-- Scroll Down Indicator -->
+        <div class="scroll-down">
+            <span>Scroll Down</span>
+            <div class="scroll-arrow">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                    <polyline points="19 12 12 19 5 12"></polyline>
+                </svg>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script>
+// Image Slider Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const sliderTrack = document.querySelector('.slider-track');
+    const slides = document.querySelectorAll('.slide');
+    let currentSlide = 0;
+    let slideInterval;
+    
+    // Function to show slide with animation
+    function showSlide(index) {
+        slides.forEach(slide => slide.classList.remove('active'));
+        slides[index].classList.add('active');
+        currentSlide = index;
+    }
+    
+    // Function to move to next slide
+    function nextSlide() {
+        currentSlide = (currentSlide + 1) % slides.length;
+        showSlide(currentSlide);
+    }
+    
+    // Auto slide functionality
+    function startAutoSlide() {
+        slideInterval = setInterval(nextSlide, 5000);
+    }
+    
+    function stopAutoSlide() {
+        clearInterval(slideInterval);
+    }
+    
+    // Start auto slide
+    startAutoSlide();
+    
+    // Pause auto slide on hover
+    sliderTrack.addEventListener('mouseenter', stopAutoSlide);
+    sliderTrack.addEventListener('mouseleave', startAutoSlide);
+    
+    // Video Button Functionality
+    const videoButton = document.getElementById('videoButton');
+    const videoBackground = document.getElementById('videoBackground');
+    const videoClose = document.getElementById('videoClose');
+    
+    // Open video when button is clicked
+    videoButton.addEventListener('click', function() {
+        videoBackground.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+    
+    // Close video when close button is clicked
+    videoClose.addEventListener('click', function() {
+        videoBackground.classList.remove('active');
+        document.body.style.overflow = '';
+    });
+    
+    // Close video when clicking outside
+    videoBackground.addEventListener('click', function(e) {
+        if (e.target === videoBackground) {
+            videoBackground.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+    
+    // Close video with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && videoBackground.classList.contains('active')) {
+            videoBackground.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+    });
+});
+</script>
+
+<!-- About Us Section -->
+<section class="about-section" id="about-section">
+
+    
+    <div class="about-container">
+        <div class="about-header">
+            <div class="about-tagline animate-on-scroll">
+
+
+
+            </div>
+            
+            <div class="about-headline animate-on-scroll">
+                <h2>
+Our Story
+                </h2>
+            </div>
+        </div>
+        
+        <div class="about-content">
+            <div class="about-story animate-on-scroll">
+                <div class="story-section">
+                    <p>We push the boundaries of functionality and aesthetics.
+Founded in 2016, with a vision for creating architectural elements that are minimalistic, yet efficient. Our commitment allows architects to achieve their vision without compromise. </p>
+                    
+                </div>
+                
+                <div class="philosophy-pillars">
+                    <div class="philosophy-pillar">
+                        <div class="pillar-number">01</div>
+                        <h4>Design</h4>
+                        <p>Our products exceed standards in terms of structure, efficiency and longevity</p>
+                    </div>
+                    
+                    <div class="philosophy-pillar">
+                        <div class="pillar-number">02</div>
+                        <h4>Minimalism</h4>
+                        <p>We emphasize clean lines and thoughtful proportions to complement architectural vision.</p>
+                    </div>
+                    
+                    <div class="philosophy-pillar">
+                        <div class="pillar-number">03</div>
+                        <h4>Style </h4>
+                        <p>We create environments where light, air and spatial flow are optimized.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="about-cta animate-on-scroll">
+        <h3>Ready to transform your architectural vision?</h3>
+        <div class="cta-container">
+            <a href="#contact-section" class="consultation-cta-button">Schedule a Consultation</a>
+        </div>
+    </div>
+</section>
+
+
+<!-- Services Section -->
+<section class="services-section" id="services-section">
+    <div class="services-container">
+        <div class="services-header animate-on-scroll">
+            <h2 class="services-title">Services</h2>
+            <p class="services-subtitle">Expertly Engineered, Seamlessly Delivered</p>
+        </div>
+
+        <!-- Statistics Counter -->
+        <div class="stats-container animate-on-scroll">
+            <div class="stat-item">
+                <span class="stat-number" data-target="18">0</span>
+                <span class="stat-plus">+</span>
+                <p>States</p>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" data-target="2000">0</span>
+                <span class="stat-plus">+</span>
+                <p>Happy Clients</p>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" data-target="9">0</span>
+                <span class="stat-plus">+</span>
+                <p>Years Experience</p>
+            </div>
+            <div class="stat-item">
+                <span class="stat-number" data-target="2500">0</span>
+                <span class="stat-plus">+</span>
+                <p>Projects Done</p>
+            </div>
+        </div>
+        
+        <div class="services-grid animate-on-scroll">
+            <!-- Main Service -->
+            <div class="service-item main-service">
+                <div class="service-content">
+                    <h3>Consultation</h3>
+                    <p>Expert guidance to bring your architectural vision to life. Our team works closely with you to understand your needs and provide tailored solutions.</p>
+                    <a href="#contact" class="service-link">Avail Now <span>›</span></a>
+                </div>
+            </div>
+            
+            <!-- Secondary Services -->
+            <div class="service-item secondary-service">
+                <div class="service-content">
+                    <h3>Design</h3>
+                    <p>Tailored window and door designs that match form with function. We create beautiful solutions that enhance your space.</p>
+                    <a href="#contact" class="service-link">Avail Now <span>›</span></a>
+                </div>
+            </div>
+            
+            <div class="service-item secondary-service">
+                <div class="service-content">
+                    <h3>Manufacturing</h3>
+                    <p>Precision-crafted elements built for durability and elegance. Quality materials and expert craftsmanship ensure lasting results.</p>
+                    <a href="#" class="service-link">Learn More <span>›</span></a>
+                </div>
+            </div>
+            
+            <!-- Tertiary Services -->
+            <div class="service-item tertiary-service">
+                <div class="service-content">
+                    <h3>Installation</h3>
+                    <p>Seamless, professional fitting with attention to every detail. Our installation team ensures perfect results every time.</p>
+                    <a href="#" class="service-link">Learn More <span>›</span></a>
+                </div>
+            </div>
+            
+            <div class="service-item tertiary-service">
+                <div class="service-content">
+                    <h3>Maintenance</h3>
+                    <p>Ongoing care to preserve performance and aesthetic appeal. Regular maintenance ensures your investment lasts for years to come.</p>
+                    <a href="#contact" class="service-link">Avail Now <span>›</span></a>
+                </div>
+            </div>
+            
+            <div class="service-item tertiary-service">
+                <div class="service-content">
+                    <h3>Support</h3>
+                    <p>Dedicated customer service to address any needs after installation. We're always available to help with any questions or concerns.</p>
+                    <a href="#contact" class="service-link">Avail Now <span>›</span></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+
+<!-- Products Section -->
+<section class="products-section" id="products">
+    <div class="products-container">
+        <div class="services-header animate-on-scroll">
+            <h2 class="services-title">Products</h2>
+            <p class="services-subtitle">Premium Solutions for Every Need</p>
+        </div>
+
+        <!-- Product Filter Tabs -->
+        <div class="product-filter-tabs">
+            <button class="filter-tab active" data-category="all">All Products</button>
+            <button class="filter-tab" data-category="windows">Windows & Glass</button>
+            <button class="filter-tab" data-category="doors">Door Systems</button>
+            <button class="filter-tab" data-category="signature">Signature Series</button>
+        </div>
+
+        <!-- Product Carousel -->
+        <div class="product-carousel">
+            <div class="product-track" id="productTrack">
+                <!-- Products will be generated dynamically -->
+            </div>
+            
+            <!-- Navigation Arrows -->
+            <div class="product-nav-arrows">
+                <div class="product-arrow prev-product">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="15 18 9 12 15 6"></polyline>
+                    </svg>
+                </div>
+                <div class="product-arrow next-product">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                    </svg>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Gallery Section -->
+<section class="gallery-section" id="gallery">
+    <div class="gallery-container">
+        <div class="services-header animate-on-scroll">
+            <h2 class="services-title">Gallery</h2>
+            <p class="services-subtitle">Showcasing Excellence in Every Detail</p>
+        </div>
+        
+        <!-- Gallery Category Filter -->
+        <div class="gallery-filter animate-on-scroll">
+            <button class="gallery-filter-button active" data-category="all">All Projects</button>
+            <button class="gallery-filter-button" data-category="residential">Residential</button>
+            <button class="gallery-filter-button" data-category="commercial">Commercial</button>
+            <button class="gallery-filter-button" data-category="signature">Signature Series</button>
+        </div>
+        
+        <div class="gallery-grid animate-on-scroll">
+            <!-- Latest gallery items will be dynamically loaded here -->
+        </div>
+        
+        <div class="gallery-cta animate-on-scroll">
+            <a href="" class="gallery-button">VIEW FULL PORTFOLIO</a>
+        </div>
+    </div>
+</section>
+
+<!-- Recent Blog Section -->
+<section class="recent-blog-section" id="blog">
+    <div class="recent-blog-container">
+        <div class="services-header animate-on-scroll">
+            <h2 class="services-title">Latest Updates</h2>
+            <p class="services-subtitle">Insights and Innovations from Our Team</p>
+        </div>
+        
+        <div class="recent-blog-posts animate-on-scroll">
+            <!-- Recent blog posts will be dynamically loaded here -->
+            <div class="blog-loading">Loading recent posts...</div>
+        </div>
+        
+        <div class="blog-cta animate-on-scroll">
+            <a href="blog.html" class="blog-button">VIEW ALL POSTS</a>
+        </div>
+    </div>
+</section>
+
+<!-- Contact Us Section -->
+<section class="contact-section" id="contact">
+    <div class="contact-container">
+        <div class="services-header animate-on-scroll">
+            <h2 class="services-title">Contact Us</h2>
+            <p class="services-subtitle">Let's Build Something Amazing Together</p>
+        </div>
+        
+        <div class="contact-content">
+            <div class="contact-form-container animate-on-scroll">
+                <form class="contact-form">
+                    <div class="form-group">
+                        <input type="text" id="name" name="name" placeholder="Your Name" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="email" id="email" name="email" placeholder="Your Email" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <input type="tel" id="phone" name="phone" placeholder="Your Phone">
+                    </div>
+                    
+                    <div class="form-group">
+                        <select id="subject" name="subject" required>
+                            <option value="" disabled selected>Select Subject</option>
+                            <option value="residential">Residential Project</option>
+                            <option value="commercial">Commercial Project</option>
+                            <option value="consultation">Design Consultation</option>
+                            <option value="other">Other Inquiry</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <textarea id="message" name="message" placeholder="Your Message" rows="4" required></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <button type="submit" class="submit-button">SEND MESSAGE</button>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="contact-info animate-on-scroll">
+                <div class="info-card">
+                    <div class="info-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                    </div>
+                    <div class="info-content">
+                        <h3>Call Us</h3>
+                        <p>+91 XXXXX</p>
+                        <p>Mon-Fri: 9AM-6PM</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+                            <polyline points="22,6 12,13 2,6"></polyline>
+                        </svg>
+                    </div>
+                    <div class="info-content">
+                        <h3>Email Us</h3>
+                        <p>info@odaville.com</p>
+                        <p>support@odaville.com</p>
+                    </div>
+                </div>
+                
+                <div class="info-card">
+                    <div class="info-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                    </div>
+                    <div class="info-content">
+                        <h3>Visit Us</h3>
+                        <p>XXXXXX</p>
+                        <p>XXXXXX</p>
+                    </div>
+                </div>
+                
+                <div class="map-container">
+                    <div id="map" style="width: 100%; height: 100%;"></div>
+                </div>
+                <script>
+                    // Initialize the map
+                    var map = L.map('map').setView([17.4336, 78.4072], 15);
+                    
+                    // Add OpenStreetMap tiles
+                    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                        maxZoom: 19,
+                        attribution: '© OpenStreetMap contributors'
+                    }).addTo(map);
+                    
+                    // Add a marker for the location
+                    var marker = L.marker([17.4336, 78.4072]).addTo(map)
+                        .bindPopup('6th Floor, Battineni\'s Techpark, Jubilee Hills rd no. 71, Hyderabad 500033')
+                        .openPopup();
+                </script>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- Footer Section with Fix -->
+<footer class="footer-section">
+    <div class="footer-container">
+        <div class="footer-top">
+            <div class="footer-logo">
+                <img src="images/Layer 2.png" alt="Odaville Logo">
+                <div class="social-links">
+                    <a href="#" class="social-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
+                            <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                            <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                            <rect x="2" y="9" width="4" height="12"></rect>
+                            <circle cx="4" cy="4" r="2"></circle>
+                        </svg>
+                    </a>
+                    <a href="#" class="social-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <div class="footer-column">
+                    <h3>Company</h3>
+                    <ul>
+                        <li><a href="#">About Us</a></li>
+                        <li><a href="#">Our Team</a></li>
+                        <li><a href="#">Careers</a></li>
+                        <li><a href="#">News & Press</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Services</h3>
+                    <ul>
+                        <li><a href="#">Architectural Design</a></li>
+                        <li><a href="#">Window Installation</a></li>
+                        <li><a href="#">Door Systems</a></li>
+                        <li><a href="#">Custom Solutions</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Products</h3>
+                    <ul>
+                        <li><a href="#">Windows & Glass</a></li>
+                        <li><a href="#">Door Systems</a></li>
+                        <li><a href="#">Signature Series</a></li>
+                        <li><a href="#">Architectural Elements</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-column">
+                    <h3>Connect</h3>
+                    <ul>
+                        <li><a href="#">Contact Us</a></li>
+                        <li><a href="#">Support</a></li>
+                        <li><a href="#">FAQs</a></li>
+                        <li><a href="#">Schedule a Call</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <div class="copyright">
+                <p>&copy; 2025 Odaville. All rights reserved.</p>
+            </div>
+            
+            <div class="legal-links">
+                <a href="#">Privacy Policy</a>
+                <a href="#">Terms of Service</a>
+                <a href="#">Cookie Policy</a>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<!-- Scripts are added below, no additional content -->
+
+
+<!--Products page Buttons scripts -->
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+        // Navigation functionality
+        const prevBtn = document.getElementById('prev-product');
+        const nextBtn = document.getElementById('next-product');
+        
+        if (prevBtn && nextBtn) {
+            // Add click handlers
+            prevBtn.addEventListener('click', function() {
+                const swiperPrevButton = document.querySelector('.swiper-button-prev');
+                if (swiperPrevButton) swiperPrevButton.click();
+            });
+            
+            nextBtn.addEventListener('click', function() {
+                const swiperNextButton = document.querySelector('.swiper-button-next');
+                if (swiperNextButton) swiperNextButton.click();
+            });
+            
+            // Add hover effects
+            [prevBtn, nextBtn].forEach(btn => {
+                btn.addEventListener('mouseenter', function() {
+                    this.style.backgroundColor = '#ca8355';
+                    this.style.transform = 'translateY(-4px)';
+                    this.style.boxShadow = '0 10px 25px rgba(202, 131, 85, 0.25)';
+                    const svg = this.querySelector('svg');
+                    if (svg) svg.style.stroke = '#fff';
+                });
+                
+                btn.addEventListener('mouseleave', function() {
+                    this.style.backgroundColor = '#fff';
+                    this.style.transform = 'translateY(0)';
+                    this.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.08)';
+                    const svg = this.querySelector('svg');
+                    if (svg) svg.style.stroke = '#333';
+                });
+                
+                btn.addEventListener('mousedown', function() {
+                    this.style.transform = 'translateY(-2px)';
+                    this.style.boxShadow = '0 8px 15px rgba(202, 131, 85, 0.2)';
+                });
+                
+                btn.addEventListener('mouseup', function() {
+                    this.style.transform = 'translateY(-4px)';
+                    this.style.boxShadow = '0 10px 25px rgba(202, 131, 85, 0.25)';
+                });
+            });
+        }
+    }, 1000);
+});
+</script>
+
+
+
+    
+<script src="./js/script.js"></script>
+<script src="./js/hamburger-menu.js"></script>
+<script src="./js/text-animations.js"></script>
+<script src="./js/preloader.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/swiper@8/swiper-bundle.min.js"></script>
+<!-- Your scripts should come after Swiper is loaded -->
+<script src="./js/script.js"></script>
+<script src="./js/hamburger-menu.js"></script>
+<script src="./js/text-animations.js"></script>
+<!-- Make sure the fixed products.js is loaded AFTER Swiper -->
+<script src="./js/products.js"></script>
+<script src="./js/about.js"></script>
+<script src="./js/db-loader.js"></script>
+<script src="./js/product-navigation.js"></script>
+<script src="./js/script-loader.js"></script>
+
+
+<!-- Viewport height fix for mobile -->
+<script>
+  function setViewportHeight() {
+    let vh = window.innerHeight * 0.01;
+    document.documentElement.style.setProperty('--vh', `${vh}px`);
+  }
+  
+  setViewportHeight();
+  window.addEventListener('resize', setViewportHeight);
+  window.addEventListener('orientationchange', setViewportHeight);
+</script>
+
+<!-- Remove the old brochure modal at the bottom and replace with this updated one -->
+<div class="brochure-modal" id="brochureModal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Get Your Brochure</h2>
+        <p>Please provide your details to receive the brochure</p>
+        <form id="brochureForm">
+            <div class="form-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" name="name" required>
+            </div>
+            <div class="form-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="phone">Phone Number</label>
+                <input type="tel" id="phone" name="phone" required>
+            </div>
+            <button type="submit">Send Brochure</button>
+        </form>
+    </div>
+</div>
+
+<script>
+// Brochure Modal Functionality
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('brochureModal');
+    const closeBtn = document.querySelector('.close');
+    const brochureButtons = document.querySelectorAll('.cta-button');
+    const brochureForm = document.getElementById('brochureForm');
+
+    // Open modal when brochure buttons are clicked
+    brochureButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            modal.style.display = 'block';
+            document.body.style.overflow = 'hidden'; // Prevent background scrolling
+        });
+    });
+
+    // Close modal when close button is clicked
+    closeBtn.addEventListener('click', function() {
+        modal.style.display = 'none';
+        document.body.style.overflow = ''; // Restore scrolling
+    });
+
+    // Close modal when clicking outside
+    window.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            modal.style.display = 'none';
+            document.body.style.overflow = ''; // Restore scrolling
+        }
+    });
+
+    // Handle form submission
+    brochureForm.addEventListener('submit', async function(e) {
+        e.preventDefault();
+        
+        // Get form data
+        const formData = new FormData(brochureForm);
+        const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            phone: formData.get('phone')
+        };
+
+        try {
+            // Send data to backend
+            const response = await fetch('/api/brochure/request', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Show success message
+                alert('Thank you! The brochure will be sent to your email shortly.');
+                
+                // Close modal and reset form
+                modal.style.display = 'none';
+                document.body.style.overflow = '';
+                brochureForm.reset();
+            } else {
+                throw new Error(result.message || 'Error submitting form');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Sorry, there was an error processing your request. Please try again later.');
+        }
+    });
+
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            modal.style.display = 'none';
+            document.body.style.overflow = '';
+        }
+    });
+
+    // Smooth scroll to contact form when consultation button is clicked
+    const consultationButton = document.querySelector('.consultation-cta-button');
+    if (consultationButton) {
+        consultationButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            const contactSection = document.getElementById('contact');
+            if (contactSection) {
+                contactSection.scrollIntoView({ behavior: 'smooth' });
+            }
+        });
+    }
+});
+</script>
+
+<!-- Statistics Counter Animation
+document.addEventListener('DOMContentLoaded', function() {
+    const stats = document.querySelectorAll('.stat-number');
+    
+    const observerOptions = {
+        threshold: 0.5
+    };
+    
+    const observer = new IntersectionObserver(function(entries, observer) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const target = parseInt(entry.target.getAttribute('data-target'));
+                animateValue(entry.target, 0, target, 2000);
+                observer.unobserve(entry.target);
+            }
+        });
+    }, observerOptions);
+    
+    stats.forEach(stat => {
+        observer.observe(stat);
+    });
+    
+    function animateValue(element, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            element.textContent = value;
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+});
+</script>
+
+<!-- Add script to handle video looping at the bottom of the file before the closing body tag -->
+<script>
+// Fix video looping issue
+document.addEventListener('DOMContentLoaded', function() {
+    const heroVideo = document.getElementById('heroVideo');
+    
+    // Preload the video
+    heroVideo.load();
+    
+    // Fix for seamless looping
+    heroVideo.addEventListener('timeupdate', function() {
+        // When the video is close to ending, restart it slightly before the end
+        // This helps prevent the black screen between loops
+        const buffer = 0.2; // seconds before end to restart
+        if (this.currentTime > this.duration - buffer) {
+            this.currentTime = 0;
+        }
+    });
+    
+    // Handle potential loading issues
+    heroVideo.addEventListener('error', function(e) {
+        console.error('Video error:', e);
+        // Fallback to restart the video if there's an error
+        setTimeout(() => {
+            heroVideo.load();
+            heroVideo.play().catch(err => console.error('Play error:', err));
+        }, 1000);
+    });
+    
+    // Force restart if video is paused for any reason
+    heroVideo.addEventListener('pause', function() {
+        if (!document.hidden) {
+            heroVideo.play().catch(err => console.error('Play error:', err));
+        }
+    });
+});
+</script>
+
+<script>
+// Statistics Counter Animation
+document.addEventListener('DOMContentLoaded', function() {
+    const stats = document.querySelectorAll('.stat-number');
+    
+    const observerOptions = {
+        threshold: 0.5 // Start animation when 50% of the element is visible
+    };
+    
+    const observer = new IntersectionObserver(function(entries, observer) {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const target = parseInt(entry.target.getAttribute('data-target'));
+                if (!isNaN(target)) { // Ensure target is a valid number
+                    animateValue(entry.target, 0, target, 2000); // 2 second duration
+                }
+                observer.unobserve(entry.target); // Stop observing once animation starts
+            }
+        });
+    }, observerOptions);
+    
+    // Observe each stat element
+    stats.forEach(stat => {
+        observer.observe(stat);
+    });
+    
+    // Animation function
+    function animateValue(element, start, end, duration) {
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            const currentVal = Math.floor(progress * (end - start) + start);
+            element.textContent = currentVal;
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
+            } else {
+                element.textContent = end; // Ensure final value is exact
+            }
+        };
+        window.requestAnimationFrame(step);
+    }
+});
+</script>
+
+</body>
+
+</html>

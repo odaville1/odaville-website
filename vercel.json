@@ -7,56 +7,28 @@
     "api/*.js": {
       "memory": 1024,
       "maxDuration": 10
+    },
+    "api/**/*.js": {
+      "memory": 1024,
+      "maxDuration": 10
     }
   },
-  "headers": [
-    {
-      "source": "**/*.mov",
-      "headers": [
-        { "key": "Content-Type", "value": "video/quicktime" }
-      ]
-    },
-    {
-      "source": "**/*.mp4",
-      "headers": [
-        { "key": "Content-Type", "value": "video/mp4" }
-      ]
-    },
-    {
-      "source": "**/*.webm",
-      "headers": [
-        { "key": "Content-Type", "value": "video/webm" }
-      ]
-    }
-  ],
   "routes": [
     {
       "src": "/api/test",
       "dest": "/api/test.js"
     },
     {
-      "src": "/api/debug",
-      "dest": "/api/debug.js"
-    },
-    {
-      "src": "/api/auth/login",
-      "dest": "/api/auth.js"
-    },
-    {
-      "src": "/api/auth/verify",
-      "dest": "/api/verify.js"
-    },
-    {
       "src": "/api/blog",
-      "dest": "/api/blog.js"
+      "dest": "/api/blog/index.js"
     },
     {
       "src": "/api/gallery",
-      "dest": "/api/gallery.js"
+      "dest": "/api/gallery/index.js"
     },
     {
       "src": "/api/products",
-      "dest": "/api/products.js"
+      "dest": "/api/products/index.js"
     },
     {
       "src": "/api/diagnostic",
@@ -69,10 +41,6 @@
     {
       "src": "/brochures/(.*)",
       "dest": "/brochures/$1"
-    },
-    {
-      "src": "/videos/(.*)",
-      "dest": "/videos/$1"
     },
     {
       "handle": "filesystem"
@@ -100,7 +68,7 @@
       "dest": "/$1.html"
     },
     {
-      "src": "/(.*)\\.(js|css|jpg|jpeg|png|gif|svg|ico|webp|ttf|woff|woff2|otf|mp4|mov|webm|mp3|avi)",
+      "src": "/(.*)\\.(js|css|jpg|jpeg|png|gif|svg|ico|webp|ttf|woff|woff2|otf)",
       "dest": "/$1.$2"
     },
     {

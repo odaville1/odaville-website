@@ -5,6 +5,7 @@ const dotenv = require("dotenv");
 const path = require("path");
 const multer = require("multer");
 const fs = require("fs");
+const jwt = require("jsonwebtoken");
 
 // Load environment variables
 dotenv.config();
@@ -20,16 +21,27 @@ console.log(`Running in ${process.env.NODE_ENV === 'production' ? 'production' :
 app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ extended: true, limit: "50mb" }));
 
-// CORS configuration - Start with permissive settings for troubleshooting
+// CORS configuration - Include admin subdomain
+const allowedOrigins = process.env.NODE_ENV === 'production' 
+  ? ['https://odaville.com', 'https://www.odaville.com', 'https://admin.odaville.com']
+  : ['http://localhost:5000', 'http://localhost:3000', 'http://localhost:3001'];
+
 app.use(cors({
   origin: function(origin, callback) {
-    // Allow all origins during troubleshooting
-    callback(null, true);
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
   },
   methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
   optionsSuccessStatus: 200,
+  exposedHeaders: ['Content-Length', 'X-Total-Count']
 }));
 
 // Create uploads directory if not in production
@@ -51,6 +63,30 @@ if (process.env.NODE_ENV !== 'production') {
     // Continue anyway - not critical for API to function
   }
 }
+
+// Authentication middleware
+const authenticateToken = (req, res, next) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.status(401).json({ message: "Authentication required" });
+    }
+    
+    jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
+      if (err) {
+        return res.status(403).json({ message: "Invalid or expired token" });
+      }
+      
+      req.user = user;
+      next();
+    });
+  } catch (error) {
+    console.error("Authentication error:", error);
+    return res.status(500).json({ message: "Authentication error" });
+  }
+};
 
 // In-memory storage for Vercel
 const memoryStorage = multer.memoryStorage();
@@ -96,6 +132,38 @@ app.get("/api/test", (req, res) => {
       memoryUsage: process.memoryUsage()
     }
   });
+});
+
+// Verify token endpoint for admin panel
+app.get("/api/verify-token", (req, res) => {
+  try {
+    const authHeader = req.headers.authorization;
+    const token = authHeader && authHeader.split(' ')[1];
+    
+    if (!token) {
+      return res.status(200).json({ valid: false, message: "No token provided" });
+    }
+    
+    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+      if (err) {
+        return res.status(200).json({ valid: false, message: "Invalid token" });
+      }
+      
+      return res.status(200).json({ 
+        valid: true, 
+        user: {
+          id: decoded.userId,
+          username: decoded.username
+        } 
+      });
+    });
+  } catch (error) {
+    console.error("Token verification error:", error);
+    return res.status(500).json({ 
+      valid: false, 
+      message: "Error verifying token" 
+    });
+  }
 });
 
 // Function to lazily connect to MongoDB
@@ -190,6 +258,47 @@ const galleryRoutes = require("./routes/gallery");
 const blogRoutes = require("./routes/blog");
 const productRoutes = require("./routes/products");
 const brochureRoutes = require('./routes/brochureRoutes');
+
+// Add admin-specific routes
+const adminRoutes = express.Router();
+
+// Admin authentication check (used for admin-only routes)
+adminRoutes.use(authenticateToken);
+
+// Admin dashboard stats endpoint
+adminRoutes.get("/dashboard-stats", async (req, res) => {
+  try {
+    await connectToMongoDB();
+    
+    // Collect stats from various collections
+    const blogCount = await mongoose.model('Blog').countDocuments();
+    const galleryCount = await mongoose.model('Gallery').countDocuments();
+    const productCount = await mongoose.model('Product').countDocuments();
+    const brochureCount = await mongoose.model('BrochureRequest').countDocuments();
+    
+    // Get recent brochure requests
+    const recentBrochures = await mongoose.model('BrochureRequest')
+      .find()
+      .sort({ createdAt: -1 })
+      .limit(5);
+    
+    res.json({
+      counts: {
+        blogs: blogCount,
+        galleryItems: galleryCount,
+        products: productCount,
+        brochureRequests: brochureCount
+      },
+      recentBrochures: recentBrochures
+    });
+  } catch (error) {
+    console.error("Error getting admin stats:", error);
+    res.status(500).json({ message: "Error getting admin dashboard stats" });
+  }
+});
+
+// Apply admin routes
+app.use("/api/admin", adminRoutes);
 
 // Routes - applied lazily after testing connectivity
 app.use("/api/auth", authRouter);

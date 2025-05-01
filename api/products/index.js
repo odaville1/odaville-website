@@ -1,54 +1,69 @@
-// api/products/index.js
-const mongoose = require('mongoose');
-const Product = require('../../backend/models/Product');
-
-// Connect to MongoDB (lazy connection)
-const connectDB = async () => {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
-  }
-};
-
+// api/products/index.js - Simplified version without DB dependency
 module.exports = async (req, res) => {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
-
-  // Handle OPTIONS (preflight) request
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+    // Set CORS headers
+    res.setHeader('Access-Control-Allow-Credentials', true);
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
   
-  try {
-    await connectDB();
-    
-    if (req.method === 'GET') {
-      // Get category from query params
-      const { category } = req.query;
-      let query = {};
-
+    // Handle OPTIONS request
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+  
+    try {
+      // Check if category filter is provided
+      const category = req.query.category;
+      
+      // Sample product data
+      let products = [
+        { 
+          _id: 'prod1',
+          title: 'Premium Window',
+          subtitle: 'Energy efficient design',
+          description: 'Our premium window offers exceptional insulation and elegant design.',
+          category: 'windows',
+          imageUrl: '/images/placeholder.jpg',
+          featured: true,
+          order: 1,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'prod2',
+          title: 'Classic Door',
+          subtitle: 'Timeless elegance',
+          description: 'Classic door design that combines durability with aesthetic appeal.',
+          category: 'doors',
+          imageUrl: '/images/placeholder.jpg',
+          featured: true,
+          order: 1,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'prod3',
+          title: 'Modern Window',
+          subtitle: 'Contemporary style',
+          description: 'Modern window design with clean lines and maximum light exposure.',
+          category: 'windows',
+          imageUrl: '/images/placeholder.jpg',
+          featured: false,
+          order: 2,
+          createdAt: new Date().toISOString()
+        }
+      ];
+      
+      // Filter by category if provided
       if (category) {
-        query.category = category;
+        products = products.filter(product => product.category === category);
       }
-
-      const products = await Product.find(query).sort({
-        order: 1,
-        createdAt: -1,
-      });
       
       return res.status(200).json(products);
+    } catch (error) {
+      console.error('Products API error:', error);
+      return res.status(500).json({ 
+        message: 'Error processing request', 
+        error: error.message,
+        timestamp: new Date().toISOString() 
+      });
     }
-    
-    // Handle other methods like POST here
-    // For now, return 405 Method Not Allowed for unsupported methods
-    return res.status(405).json({ message: 'Method not allowed' });
-  } catch (error) {
-    console.error('Products API error:', error);
-    return res.status(500).json({ message: 'Server error', error: error.message });
-  }
-};
+  };

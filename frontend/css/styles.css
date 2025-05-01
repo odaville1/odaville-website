@@ -62,15 +62,30 @@ body {
 
 /* Header and Navigation Styles */
 .site-header {
-  position: fixed;
+  position: relative;
   top: 0;
   left: 0;
   width: 100%;
   z-index: 1000;
   background-color: transparent;
-  transition: background-color 0.3s ease;
+  transition: all 0.3s ease;
   padding: 1% 2.5%;
   box-sizing: border-box;
+}
+
+/* Home page specific header style */
+.home-header {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+}
+
+/* Add padding to body when header is fixed */
+.home-page {
+  padding-top: 80px;
 }
 
 .header-container {
@@ -294,27 +309,27 @@ body {
 
 /* Update hero content styles */
 .hero-content {
-    position: relative;
-    z-index: 3;
-    text-align: left;
-    padding: 0 5%;
-    max-width: 800px;
-    margin-left: 0;
-    margin-right: auto;
+  position: relative;
+  z-index: 3;
+  text-align: left;
+  padding: 0 5%;
+  max-width: 800px;
+  margin-left: 20px;
+  margin-right: auto;
 }
 
 .hero-description {
-    font-size: 45px;
-    font-weight: 500;
-    margin-bottom: 20px;
-    line-height: 1.4;
-    text-align: left;
-    color: #ffffff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-    font-family: 'montserratelight', sans-serif;
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    }
+  font-size: 45px;
+  font-weight: 500;
+  margin-bottom: 10px;
+  line-height: 1.4;
+  text-align: left;
+  color: #ffffff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  font-family: 'montserratelight', sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
 
 /* Add style for the subtitle text */
 .hero-subtitle {
@@ -332,12 +347,15 @@ body {
 
 /* Adjust button alignment */
 .cta-container {
-    margin-left: 0;
-    text-align: left;
+  margin-left: 0;
+  margin-right: auto;
+  text-align: left;
   position: relative;
-    display: inline-block;
-    width: 280px;
-    height: 71px;
+  display: block;
+  width: 280px;
+  height: 71px;
+  margin-top: 0px;
+  left: 0;
 }
 
 /* Responsive styles for video background */
@@ -377,7 +395,7 @@ body {
   width: 100%;
   height: 90%;
   transition: transform 0.3s ease;
-  pointer-events: none; /* Allow clicks to pass through to the button */
+  pointer-events: none;
 }
 
 .cta-button {
@@ -385,16 +403,16 @@ body {
   position: absolute;
   display: flex;
   align-items: center;
-  text-align: center;
   justify-content: center;
-  width: 100%;
+  width: 90%;
   height: 80%;
   color: #fff;
   font-size: 18px;
   font-weight: 500;
   text-decoration: none;
-  padding-right: 20px; /* Adjust text position to account for the shape */
+  padding-right: 0; /* Remove right padding that might be shifting alignment */
   z-index: 2;
+  left: 0; /* Ensure no offset */
 }
 
 .cta-button .arrow {
@@ -411,6 +429,34 @@ body {
 .cta-container:hover .cta-button {
   transform: translateY(-2px);
 }
+/* Remove any transform that might be affecting alignment */
+.cta-container:hover .button-shape,
+.cta-container:hover .cta-button {
+    transform: translateY(-2px); /* Maintain hover effect but ensure no horizontal shift */
+}
+
+/* Mobile responsiveness adjustments */
+@media (max-width: 768px) {
+    .hero-content {
+        margin-left: 15px; /* Slightly adjust margin for mobile */
+    }
+    
+    .cta-container {
+        width: 250px; /* Slightly smaller on mobile */
+    }
+}
+
+@media (max-width: 480px) {
+    .hero-content {
+        margin-left: 10px; /* Even smaller margin for very small screens */
+    }
+    
+    .cta-container {
+        width: 200px;
+        height: 55px;
+    }
+}
+
 
 /* Updated Scroll Down Indicator Styles */
 .scroll-down {
@@ -426,7 +472,7 @@ body {
 }
 
 .scroll-down span {
-  font-size: 12px;
+  font-size: 14px;
   margin-bottom: 10px;
   opacity: 0.8;
   color: #fff;
@@ -434,17 +480,51 @@ body {
 
 .scroll-arrow {
   animation: bounce 2s infinite;
-
   border-radius: 50%;
   padding: 8px;
   transition: all 0.3s ease;
 }
 
-
-
 .scroll-arrow svg {
-  width: 24px;
-  height: 24px;
+  width: 18px;
+  height: 18px;
+}
+
+/* Mobile styles for scroll down */
+@media (max-width: 768px) {
+  .scroll-down {
+    bottom: 15px;
+  }
+  
+  .scroll-down span {
+    font-size: 6px;
+    margin-bottom: 6px;
+  }
+
+  .scroll-arrow {
+    padding: 4px;
+  }
+  
+  .scroll-arrow svg {
+    width: 14px;
+    height: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .scroll-down span {
+    font-size: 8px;
+    margin-bottom: 4px;
+  }
+
+  .scroll-arrow {
+    padding: 3px;
+  }
+  
+  .scroll-arrow svg {
+    width: 12px;
+    height: 12px;
+  }
 }
 
 @keyframes bounce {
@@ -470,8 +550,8 @@ body {
   }
   
   .scroll-arrow svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
   }
 }
 
@@ -632,15 +712,25 @@ body {
     font-size: 36px;
   }
 
+  .hero-content {
+    position: absolute;
+    bottom: 100px;
+    left: 10px;
+    margin: 0;
+    padding: 0;
+  }
+
   .hero-description {
     font-size: 20px;
+    margin-bottom: 5px;
   }
 
   /* Make button even more compact */
   .cta-container {
     width: 200px;
     height: 55px;
-    margin-top: 25px;
+    margin-top: 5px;
+    margin-left: 0;
   }
 
   .cta-button {
@@ -649,8 +739,8 @@ body {
 
   /* Adjust SVG size for mobile */
   .button-shape {
+    transform-origin: left center;
     transform: scale(0.8);
-    transform-origin: center;
   }
 
   .header-container {
@@ -660,11 +750,12 @@ body {
   .hero-content-wrapper {
     width: 95%;
     height: 75vh;
+    position: relative;
   }
 
   /* Scroll indicator adjustments */
   .scroll-down {
-    bottom: 15px;
+    bottom: 20px;
   }
 }
 
@@ -926,7 +1017,7 @@ body {
 
 /* About CTA Section */
 .about-cta {
-  background-color: #d8a25b;
+  background-image: url('../images/Website picture 2.jpg');
   padding: 60px 0;
   text-align: center;
   color: #fff;
@@ -935,12 +1026,22 @@ body {
   transform: translateY(30px);
   transition: opacity 0.8s ease, transform 0.8s ease;
   transition-delay: 0.5s;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+/* Mobile background image */
+@media (max-width: 768px) {
+  .about-cta {
+    background-image: url('../images/website picture 4.png');
+  }
 }
 
 .about-cta h3 {
   font-size: 1.8rem;
   font-weight: 500;
-  margin: 0 0 25px 0;
+  margin: 0 0 15px 0;
 }
 
 /* About CTA Button with SVG Shape */
@@ -949,7 +1050,7 @@ body {
   display: inline-block;
   width: 280px;
   height: 71px;
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .about-cta .button-shape {
@@ -1000,6 +1101,11 @@ body {
 
   .about-cta h3 {
     font-size: 1.5rem;
+    margin-bottom: 10px;
+  }
+
+  .about-cta .cta-container {
+    margin-top: 8px;
   }
 
   .about-cta .about-cta-button {
@@ -1363,543 +1469,6 @@ body {
     .service-item p {
         font-size: 14px;
     }
-}
-
-/* Products page specific styles */
-.products-section {
-  padding: 80px 0;
-  background-color: #fff;
-  overflow: hidden;
-}
-
-.products-container {
-  max-width: 95%;
-  margin: 0 auto;
-  position: relative;
-}
-
-/* Product Navigation */
-.products-navigation {
-  display: none;
-}
-
-.nav-dot {
-  display: none;
-}
-
-.nav-dot.active {
-  display: none;
-}
-
-/* New Product Carousel */
-.product-carousel {
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-  margin-top: 60px;
-}
-
-.product-track {
-  display: flex;
-  transition: transform 0.5s ease-in-out;
-  height: 560px;
-  align-items: center;
-  padding: 0 80px;
-}
-
-.product-card {
-  min-width: 280px;
-  height: 400px;
-  margin: 0 20px;
-  border-radius: 10px;
-  overflow: hidden;
-  background-color: #fff;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
-  transition: all 0.5s ease;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  cursor: pointer;
-  opacity: 0.7;
-  transform: scale(0.85);
-}
-
-.product-card.active {
-  opacity: 1 !important;
-  filter: none !important;
-  background: #fff !important;
-  box-shadow: 0 0 24px 0 rgba(216, 162, 91, 0.15), 0 20px 40px rgba(0,0,0,0.08);
-  border: 2px solid #d8a25b;
-  z-index: 5;
-}
-
-.product-card.active .product-image img {
-  filter: none !important;
-  opacity: 1 !important;
-}
-
-.product-image {
-  width: 100%;
-  height: 70%;
-  overflow: hidden;
-  position: relative;
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  transition: transform 0.5s ease;
-}
-
-.product-category {
-  position: absolute;
-  top: 15px;
-  left: 15px;
-  background-color: rgba(216, 162, 91, 0.9);
-  color: #fff;
-  padding: 5px 15px;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 500;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  z-index: 2;
-}
-
-.product-info {
-  padding: 20px;
-  flex-grow: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  background-color: #fff;
-  text-align: center;
-}
-
-.product-info h3 {
-  margin: 0 0 10px;
-  font-size: 20px;
-    color: #333;
-  font-weight: 600;
-}
-
-.product-info p {
-  margin: 10px 0 0;
-  font-size: 14px;
-    color: #666;
-  line-height: 1.4;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Filter Tabs styling to match image */
-.product-filter-tabs {
-  display: flex;
-  justify-content: center;
-  margin: 30px 0 50px;
-  flex-wrap: wrap;
-}
-
-.filter-tab {
-  padding: 8px 20px;
-  margin: 0 5px 10px;
-  background-color: #f5f5f5;
-  border: none;
-  border-radius: 30px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  font-size: 14px;
-    font-weight: 500;
-  color: #666;
-}
-
-.filter-tab.active {
-  background-color: #d8a25b;
-  color: #fff;
-}
-
-.filter-tab:hover {
-  background-color: #e6e6e6;
-}
-
-.filter-tab.active:hover {
-  background-color: #c69346;
-}
-
-/* Product Navigation Arrows */
-.product-nav-arrows {
-  position: absolute;
-  width: 100%;
-  top: 50%;
-  left: 0;
-  transform: translateY(-50%);
-  display: flex;
-  justify-content: space-between;
-  padding: 0;
-  z-index: 10;
-  pointer-events: none;
-}
-
-.product-arrow {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background-color: #fff;
-  display: flex;
-    align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease;
-  pointer-events: auto;
-  position: absolute;
-}
-
-.product-arrow.prev-product {
-  left: 20px;
-}
-
-.product-arrow.next-product {
-  right: 20px;
-}
-
-.product-arrow:hover {
-  background-color: #d8a25b;
-  transform: scale(1.1);
-}
-
-.product-arrow svg {
-  width: 18px;
-  height: 18px;
-  stroke: #333;
-  transition: stroke 0.3s ease;
-}
-
-.product-arrow:hover svg {
-  stroke: #fff;
-}
-
-/* Responsive styles */
-@media (max-width: 1200px) {
-  .product-card {
-    min-width: 240px;
-    height: 380px;
-    }
-
-  .product-card.active {
-    min-width: 300px;
-    height: 450px;
-    }
-}
-
-@media (max-width: 768px) {
-  .product-carousel {
-    margin-top: 40px;
-    }
-
-  .product-track {
-    height: 480px;
-  }
-
-  .product-card {
-    min-width: 220px;
-    height: 350px;
-    margin: 0 10px;
-    }
-
-  .product-card.active {
-    min-width: 260px;
-    height: 400px;
-    }
-
-  .product-info h3 {
-    font-size: 16px;
-    }
-
-  .product-info p {
-    font-size: 13px;
-    }
-
-  .product-nav-arrows {
-    padding: 0 20px;
-    }
-
-  .product-arrow {
-    width: 40px;
-    height: 40px;
-    }
-}
-
-@media (max-width: 480px) {
-  .product-track {
-    height: 400px;
-    }
-
-  .product-card {
-    min-width: 180px;
-    height: 300px;
-    margin: 0 5px;
-    }
-
-  .product-card.active {
-    min-width: 220px;
-    height: 340px;
-    }
-
-  .product-info {
-    padding: 15px;
-    }
-
-  .product-info h3 {
-    font-size: 14px;
-    }
-
-  .product-info p {
-    font-size: 12px;
-}
-
-  .product-arrow {
-    width: 36px;
-    height: 36px;
-  }
-}
-
-/* Products Header Styles */
-.products-section .services-header {
-  text-align: center;
-  margin-bottom: 40px;
-  padding: 0 15px;
-}
-
-/* Products Slider Styles */
-.slider-container {
-  position: relative;
-  overflow: hidden;
-  width: 100%;
-  padding: 20px 0;
-}
-
-.slider-track {
-  display: flex;
-  transition: transform 0.5s ease;
-  width: 100%;
-}
-
-.product-slide {
-  flex: 0 0 33.333%;
-  padding: 0 15px;
-  box-sizing: border-box;
-  transition: all 0.3s ease;
-}
-
-.product-card {
-  background: #fff;
-  border-radius: 8px;
-  overflow: hidden;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.05);
-  height: 100%;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.product-card:hover {
-  transform: translateY(-10px);
-  box-shadow: 0 15px 30px rgba(0,0,0,0.1);
-}
-
-.product-image {
-  height: 300px;
-  position: relative;
-  overflow: hidden;
-}
-
-.product-image img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-}
-
-.product-info {
-  padding: 20px;
-  text-align: center;
-  background: #fff;
-}
-
-.product-info h3 {
-  font-size: 1.4rem;
-  font-weight: 600;
-  margin: 0 0 10px;
-  color: #333;
-}
-
-.product-info p {
-  font-size: 0.9rem;
-  color: #666;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-/* Responsive Styles for Products */
-@media (max-width: 1200px) {
-  .product-slide {
-    flex: 0 0 50%;
-  }
-  
-  .product-image {
-    height: 250px;
-  }
-}
-
-@media (max-width: 768px) {
-  .products-section {
-    padding: 40px 0;
-  }
-
-  .product-slide {
-    flex: 0 0 100%;
-    padding: 0 10px;
-  }
-  
-  .product-image {
-    height: 200px;
-  }
-  
-  .product-info h3 {
-    font-size: 1.2rem;
-  }
-  
-  .product-info p {
-    font-size: 0.8rem;
-  }
-  
-  .slider-container {
-    padding: 10px 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .products-section {
-    padding: 30px 0;
-  }
-
-  .product-slide {
-    padding: 0 8px;
-  }
-  
-  .product-image {
-    height: 180px;
-  }
-  
-  .product-info {
-    padding: 15px;
-  }
-  
-  .product-info h3 {
-    font-size: 1.1rem;
-    margin-bottom: 8px;
-  }
-}
-
-/* Navigation Arrows */
-.nav-arrows {
-  position: absolute;
-  top: 50%;
-  left: 0;
-  right: 0;
-  transform: translateY(-50%);
-  display: flex;
-  justify-content: space-between;
-  z-index: 10;
-  padding: 0 15px;
-}
-
-.nav-arrow {
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  background: #fff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-  transition: all 0.3s ease;
-}
-
-.nav-arrow:hover {
-  background: #ca8355;
-  transform: scale(1.1);
-}
-
-/* Pagination Dots */
-.pagination-dots {
-  display: flex;
-  justify-content: center;
-  margin-top: 20px;
-  gap: 8px;
-}
-
-.dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #ddd;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-
-.dot.active {
-  background: #ca8355;
-  transform: scale(1.2);
-}
-
-/* Category Filters */
-.category-filters {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-  margin: 0 auto 30px;
-  padding: 0 15px;
-  flex-wrap: wrap;
-}
-
-.filter-button {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 20px;
-  font-size: 0.9rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  background: #f5f5f5;
-  color: #666;
-  white-space: nowrap;
-}
-
-.filter-button:hover {
-  background: #e9e9e9;
-}
-
-.filter-button.active {
-  background: #ca8355;
-  color: #fff;
-}
-
-@media (max-width: 768px) {
-  .category-filters {
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-  
-  .filter-button {
-    padding: 6px 12px;
-    font-size: 0.8rem;
-  }
-  
-  .nav-arrows {
-    display: none; /* Hide arrows on mobile */
-  }
 }
 
 /* Gallery Section Styles */
@@ -3307,12 +2876,12 @@ input, select, textarea, button {
   }
   .product-track {
     width: 100%;
-    padding: 0;
+    padding: 2px;
     justify-content: center;
     align-items: center;
   }
   .product-card {
-    margin: 0 4px;
+    /* margin: 0 4px; */
   }
 }
 
@@ -3326,7 +2895,7 @@ input, select, textarea, button {
   border: none;
   border-radius: 30px;
   text-decoration: none;
-  transition: background 0.2s, box-shadow 0.2s;
+  /* transition: background 0.2s, box-shadow 0.2s; */
   box-shadow: 0 2px 8px rgba(0,0,0,0.07);
   margin-top: 18px;
   cursor: pointer;
@@ -3340,4 +2909,31 @@ input, select, textarea, button {
 }
 .about-cta .cta-container {
   text-align: center;
+}
+
+@media (max-width: 480px) {
+  .hero-content {
+    margin-left: 10px;
+  }
+
+  .hero-description {
+    font-size: 20px;
+    margin-bottom: 5px;
+  }
+
+  .cta-container {
+    width: 200px;
+    height: 55px;
+    margin-top: 5px;
+    margin-left: 0;
+  }
+
+  .button-shape {
+    transform-origin: left center;
+  }
+
+  .cta-button {
+    font-size: 10px;
+    padding-left: 0;
+  }
 }

@@ -16,6 +16,37 @@
     <script src="js/products.js" defer></script>
     <script src="js/navbar.js" defer></script>
 </head>
+<style>
+    /* Mobile video styling */
+    .video-background {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+    }
+    
+    .video-horizontal,
+    .video-vertical {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    
+    /* For Safari on iOS */
+    .video-vertical {
+      object-position: center;
+    }
+    
+    @media (max-width: 767px) {
+      .video-background {
+        min-height: 100vh; /* Use viewport height */
+        min-height: calc(var(--vh, 1vh) * 100);
+      }
+    }
+    </style>
 <body>
 <!-- Header with Logo and Navigation -->
 <header class="site-header home-header">
@@ -66,10 +97,10 @@
     <div class="hero-content-wrapper">
         <!-- Video Background -->
         <div class="video-background">
-            <video class="video-horizontal" id="heroVideoHorizontal" autoplay loop muted playsinline preload="auto">
+            <video class="video-horizontal" id="heroVideoHorizontal" autoplay loop muted playsinline preload="metadata">
                 <source src="images/WebsiteVideo1.mp4" type="video/mp4">
             </video>
-            <video class="video-vertical" id="heroVideoVertical" autoplay loop muted playsinline preload="auto">
+            <video class="video-vertical" id="heroVideoVertical" autoplay loop muted playsinline preload="metadata">
                 <source src="images/WebsiteVertical1.mp4" type="video/mp4">
             </video>
             <div class="video-overlay"></div>
@@ -945,6 +976,87 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 </script>
+<script>
+    // Fix mobile video playback issues
+    document.addEventListener('DOMContentLoaded', function() {
+      const videoHorizontal = document.getElementById('heroVideoHorizontal');
+      const videoVertical = document.getElementById('heroVideoVertical');
+      
+      // Determine which video to display based on orientation
+      function setActiveVideo() {
+        const isPortrait = window.innerHeight > window.innerWidth;
+        
+        if (isPortrait) {
+          videoHorizontal.style.display = 'none';
+          videoVertical.style.display = 'block';
+          playVideo(videoVertical);
+        } else {
+          videoVertical.style.display = 'none';
+          videoHorizontal.style.display = 'block';
+          playVideo(videoHorizontal);
+        }
+      }
+      
+      // Function to play video with error handling
+      function playVideo(videoElement) {
+        if (videoElement.paused) {
+          videoElement.load(); // Reload the video
+          videoElement.play().catch(error => {
+            console.log('Video play error:', error);
+            
+            // Handle autoplay restrictions by adding a play button
+            if (error.name === 'NotAllowedError') {
+              createPlayButton(videoElement);
+            }
+          });
+        }
+      }
+      
+      // Create play button for mobile
+      function createPlayButton(videoElement) {
+        // Check if play button already exists
+        if (document.querySelector('.mobile-play-button')) return;
+        
+        const playButton = document.createElement('button');
+        playButton.className = 'mobile-play-button';
+        playButton.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 24 24" fill="#fff"><path d="M8 5v14l11-7z"/></svg>';
+        playButton.style.position = 'absolute';
+        playButton.style.top = '50%';
+        playButton.style.left = '50%';
+        playButton.style.transform = 'translate(-50%, -50%)';
+        playButton.style.background = 'rgba(0, 0, 0, 0.5)';
+        playButton.style.border = 'none';
+        playButton.style.borderRadius = '50%';
+        playButton.style.padding = '15px';
+        playButton.style.cursor = 'pointer';
+        playButton.style.zIndex = '10';
+        
+        // Add click event to play video
+        playButton.addEventListener('click', function() {
+          videoElement.play().then(() => {
+            playButton.remove();
+          }).catch(err => console.error('Play error after click:', err));
+        });
+        
+        // Add button to video container
+        document.querySelector('.video-background').appendChild(playButton);
+      }
+      
+      // Set the active video on page load
+      setActiveVideo();
+      
+      // Update when orientation changes
+      window.addEventListener('resize', setActiveVideo);
+      window.addEventListener('orientationchange', setActiveVideo);
+      
+      // Ensure videos reload when they become visible
+      document.addEventListener('visibilitychange', function() {
+        if (!document.hidden) {
+          setActiveVideo();
+        }
+      });
+    });
+    </script>
 
 </body>
 

@@ -1,16 +1,144 @@
 /**
  * Odaville Website - Strict Database-Only Content Loader
+ * With Mock Data Fallback
  */
 
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Database-ONLY content loader initialized");
+  console.log("Database-ONLY content loader initialized with mock data support");
 
-  // API configuration with retry logic
+  // Mock data for use when API fails
+  const mockData = {
+    gallery: [
+      {
+        _id: 'gallery-item-1',
+        title: 'Modern Circular Window Design',
+        description: 'Beautiful circular window installation with a panoramic ocean view',
+        category: 'residential',
+        imageUrl: './images/gallery/circular-window.jpg',
+        isFeatured: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        _id: 'gallery-item-2',
+        title: 'Minimalist Glass Wall',
+        description: 'Floor-to-ceiling glass wall installation for maximum natural light',
+        category: 'commercial',
+        imageUrl: './images/gallery/glass-wall.jpg',
+        isFeatured: false,
+        createdAt: new Date().toISOString()
+      },
+      {
+        _id: 'gallery-item-3',
+        title: 'Signature Series Folding Doors',
+        description: 'Custom-designed folding door system for indoor-outdoor living',
+        category: 'signature',
+        imageUrl: './images/gallery/folding-doors.jpg',
+        isFeatured: true,
+        createdAt: new Date().toISOString()
+      },
+      {
+        _id: 'gallery-item-4',
+        title: 'Luxury Skylight Installation',
+        description: 'Premium skylight providing natural illumination to interior spaces',
+        category: 'residential',
+        imageUrl: './images/gallery/skylight.jpg',
+        isFeatured: false,
+        createdAt: new Date().toISOString()
+      },
+      {
+        _id: 'gallery-item-5',
+        title: 'Corporate Entrance Solution',
+        description: 'Elegant glass entrance design for modern office buildings',
+        category: 'commercial',
+        imageUrl: './images/gallery/corporate-entrance.jpg',
+        isFeatured: true,
+        createdAt: new Date().toISOString()
+      }
+    ],
+    blog: [
+      {
+        _id: 'blog-post-1',
+        title: 'Transforming Spaces with Natural Light',
+        content: '<p>Natural light has a profound impact on our well-being and the aesthetics of our living spaces. In this article, we explore innovative window solutions that maximize natural light while maintaining energy efficiency.</p><p>Studies have shown that exposure to natural light improves mood, productivity, and overall health. By incorporating larger windows, strategic placement, and advanced glazing technologies, homeowners can transform their spaces into bright, inviting environments.</p><p>Our latest projects demonstrate how thoughtful window design can reduce dependence on artificial lighting during daylight hours, resulting in significant energy savings while creating more pleasant living environments.</p>',
+        author: 'Sarah Johnson',
+        category: 'Design Tips',
+        imageUrl: './images/blog/natural-light.jpg',
+        tags: ['windows', 'natural light', 'energy efficiency'],
+        isPublished: true,
+        publishedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      },
+      {
+        _id: 'blog-post-2',
+        title: 'The Evolution of Modern Window Design',
+        content: '<p>Window design has evolved significantly over the centuries, from small openings in stone walls to the expansive glass installations we see today. This evolution reflects changes in architectural preferences, technological capabilities, and lifestyle needs.</p><p>Modern window systems now incorporate advanced features like thermal breaks, low-emissivity coatings, and inert gas fills to improve energy performance. These innovations allow for larger glass areas without compromising comfort or efficiency.</p><p>As we look toward the future, emerging technologies like electrochromic glass and integrated solar collection are poised to further revolutionize how we think about windows in architectural design.</p>',
+        author: 'Michael Chen',
+        category: 'Industry Trends',
+        imageUrl: './images/blog/modern-windows.jpg',
+        tags: ['innovation', 'design history', 'technology'],
+        isPublished: true,
+        publishedAt: new Date().toISOString(),
+        createdAt: new Date().toISOString()
+      },
+
+    ],
+    products: [
+      {
+        _id: 'product-1',
+        title: 'Panorama Series Windows',
+        subtitle: 'Maximize Your View',
+        description: 'Our flagship window series offering unobstructed views with minimal framing and maximum glass area. Engineered for strength and thermal performance.',
+        category: 'windows',
+        imageUrl: './images/products/panorama-windows.jpg',
+        featured: true,
+        order: 1,
+        createdAt: new Date().toISOString()
+      },
+      {
+        _id: 'product-2',
+        title: 'Horizon Sliding Doors',
+        subtitle: 'Seamless Indoor-Outdoor Living',
+        description: 'Premium sliding door system with ultra-slim profiles and smooth operation. Available in configurations up to 12 meters wide.',
+        category: 'doors',
+        imageUrl: './images/products/horizon-doors.jpg',
+        featured: true,
+        order: 2,
+        createdAt: new Date().toISOString()
+      },
+      {
+        _id: 'product-3',
+        title: 'Element Pivot Doors',
+        subtitle: 'Make a Grand Entrance',
+        description: 'Oversized pivot doors that create a dramatic entryway statement. Engineered hardware system allows for effortless operation despite substantial size.',
+        category: 'doors',
+        imageUrl: './images/products/pivot-doors.jpg',
+        featured: false,
+        order: 3,
+        createdAt: new Date().toISOString()
+      },
+      {
+        _id: 'product-4',
+        title: 'Infinity Corner Windows',
+        subtitle: 'No Frame, No Limits',
+        description: 'Revolutionary frameless corner window system that creates the illusion of floating glass. Perfect for maximizing views and bringing the outdoors in.',
+        category: 'signature',
+        imageUrl: './images/products/corner-windows.jpg',
+        featured: true,
+        order: 4,
+        createdAt: new Date().toISOString()
+      }
+    ]
+  };
+
+  // API configuration with retry logic and mock data fallback
   const API = {
     // Change from localhost to relative URL for production
     baseUrl: "/api",
+    
+    // Flag to indicate if we're using mock data
+    usingMockData: false,
 
-    // Fetch with retry logic
+    // Fetch with retry logic and mock data fallback
     async fetch(endpoint, options = {}) {
       const url = this.baseUrl + endpoint;
       const maxRetries = 3;
@@ -27,8 +155,6 @@ document.addEventListener("DOMContentLoaded", function () {
               "Content-Type": "application/json",
               ...(options.headers || {}),
             },
-            // Remove credentials include which can cause CORS issues
-            // credentials: "include",
           });
 
           if (!response.ok) {
@@ -51,13 +177,31 @@ document.addEventListener("DOMContentLoaded", function () {
 
           if (retryCount >= maxRetries) {
             console.error(
-              `All ${maxRetries} attempts failed. Returning empty data.`
+              `All ${maxRetries} attempts failed. Falling back to mock data.`
             );
-            // Return empty data structure based on endpoint
+            
+            // Set flag to indicate we're using mock data
+            this.usingMockData = true;
+            
+            // Return mock data based on endpoint
             if (endpoint.includes("/blog")) {
-              return endpoint.includes("?") ? [] : null;
+              if (endpoint.includes("?") || endpoint.includes("/")) {
+                // Looking for a specific blog post
+                const blogId = endpoint.split("/").pop();
+                const mockBlog = mockData.blog.find(post => post._id === blogId);
+                console.log("Using mock blog data:", mockBlog ? "Found" : "Not found");
+                return mockBlog || null;
+              } else {
+                // All blog posts
+                console.log("Using mock blog data:", mockData.blog.length, "items");
+                return mockData.blog;
+              }
             } else if (endpoint.includes("/gallery")) {
-              return [];
+              console.log("Using mock gallery data:", mockData.gallery.length, "items");
+              return mockData.gallery;
+            } else if (endpoint.includes("/products")) {
+              console.log("Using mock product data:", mockData.products.length, "items");
+              return mockData.products;
             }
             return null;
           }
@@ -72,7 +216,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
     // Convenience methods
     async getBlogs(published = false) {
-      return this.fetch("/blog", { params: { published } });
+      const blogs = await this.fetch("/blog");
+      // Filter for published posts if needed
+      return published && blogs ? blogs.filter(blog => blog.isPublished) : blogs;
     },
 
     async getBlogById(id) {
@@ -82,6 +228,10 @@ document.addEventListener("DOMContentLoaded", function () {
     async getGallery() {
       return this.fetch("/gallery");
     },
+    
+    async getProducts() {
+      return this.fetch("/products");
+    }
   };
 
   // Gallery Manager
@@ -95,15 +245,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       this.galleryContainer.innerHTML =
-        '<div class="gallery-loading">Loading gallery items from database...</div>';
+        '<div class="gallery-loading">Loading gallery items...</div>';
 
       try {
-        // Get gallery items strictly from database
+        // Get gallery items from API with mock data fallback
         const items = await API.getGallery();
 
         if (!items || items.length === 0) {
           this.galleryContainer.innerHTML =
-            '<div class="no-items">No gallery items found in database</div>';
+            '<div class="no-items">No gallery items found</div>';
           return;
         }
 
@@ -148,11 +298,12 @@ document.addEventListener("DOMContentLoaded", function () {
         // Initialize hover effects
         this.initGalleryEffects();
 
-        console.log("Gallery items loaded successfully from database");
+        console.log("Gallery items loaded successfully", 
+                   API.usingMockData ? "(using mock data)" : "from database");
       } catch (error) {
         console.error("Error loading gallery items:", error);
         this.galleryContainer.innerHTML =
-          '<div class="error">Failed to load gallery items from database</div>';
+          '<div class="error">Failed to load gallery items</div>';
       }
     },
 
@@ -202,7 +353,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       container.innerHTML =
-        '<div class="blog-loading">Loading blog posts from database...</div>';
+        '<div class="blog-loading">Loading blog posts...</div>';
 
       try {
         // Always get published posts only for public website
@@ -210,7 +361,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
         if (!posts || posts.length === 0) {
           container.innerHTML =
-            '<div class="no-posts">No published blog posts found in database</div>';
+            '<div class="no-posts">No published blog posts found</div>';
           return;
         }
 
@@ -248,10 +399,13 @@ document.addEventListener("DOMContentLoaded", function () {
         if (this.blogPagination && this.blogContainer) {
           this.renderPagination(filteredPosts.length, page);
         }
+        
+        console.log("Blog posts loaded successfully", 
+                   API.usingMockData ? "(using mock data)" : "from database");
       } catch (error) {
         console.error("Error loading blog posts:", error);
         container.innerHTML =
-          '<div class="error">Failed to load blog posts from database</div>';
+          '<div class="error">Failed to load blog posts</div>';
       }
     },
 
@@ -298,6 +452,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     },
 
+    // Rest of blogManager methods remain the same
     renderPagination(totalPosts, currentPage) {
       if (!this.blogPagination) return;
 
@@ -397,15 +552,15 @@ document.addEventListener("DOMContentLoaded", function () {
       }
 
       this.blogDetailContainer.innerHTML =
-        '<div class="blog-loading">Loading blog post from database...</div>';
+        '<div class="blog-loading">Loading blog post...</div>';
 
       try {
-        // Get blog post by ID strictly from database
+        // Get blog post by ID with mock data fallback
         const post = await API.getBlogById(slug);
 
         if (!post) {
           this.blogDetailContainer.innerHTML =
-            '<div class="error">Blog post not found in database</div>';
+            '<div class="error">Blog post not found</div>';
           return;
         }
 
@@ -476,10 +631,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
         // Load related posts
         this.loadRelatedPosts(post);
+        
+        console.log("Blog post detail loaded successfully", 
+                   API.usingMockData ? "(using mock data)" : "from database");
       } catch (error) {
         console.error("Error loading blog post detail:", error);
         this.blogDetailContainer.innerHTML =
-          '<div class="error">Failed to load blog post from database</div>';
+          '<div class="error">Failed to load blog post</div>';
       }
     },
 
@@ -664,6 +822,6 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   // Start the application
-  console.log("Starting application with STRICT Database-Only approach...");
+  console.log("Starting application with Database-First approach and Mock Data fallback...");
   initializePage();
 });

@@ -6,129 +6,56 @@
 document.addEventListener("DOMContentLoaded", function () {
   console.log("Database-ONLY content loader initialized with mock data support");
 
-  // Mock data for use when API fails
-  const mockData = {
-    gallery: [
-      {
-        _id: 'gallery-item-1',
-        title: 'Modern Circular Window Design',
-        description: 'Beautiful circular window installation with a panoramic ocean view',
-        category: 'residential',
-        imageUrl: './images/gallery/circular-window.jpg',
-        isFeatured: true,
-        createdAt: new Date().toISOString()
-      },
-      {
-        _id: 'gallery-item-2',
-        title: 'Minimalist Glass Wall',
-        description: 'Floor-to-ceiling glass wall installation for maximum natural light',
-        category: 'commercial',
-        imageUrl: './images/gallery/glass-wall.jpg',
-        isFeatured: false,
-        createdAt: new Date().toISOString()
-      },
-      {
-        _id: 'gallery-item-3',
-        title: 'Signature Series Folding Doors',
-        description: 'Custom-designed folding door system for indoor-outdoor living',
-        category: 'signature',
-        imageUrl: './images/gallery/folding-doors.jpg',
-        isFeatured: true,
-        createdAt: new Date().toISOString()
-      },
-      {
-        _id: 'gallery-item-4',
-        title: 'Luxury Skylight Installation',
-        description: 'Premium skylight providing natural illumination to interior spaces',
-        category: 'residential',
-        imageUrl: './images/gallery/skylight.jpg',
-        isFeatured: false,
-        createdAt: new Date().toISOString()
-      },
-      {
-        _id: 'gallery-item-5',
-        title: 'Corporate Entrance Solution',
-        description: 'Elegant glass entrance design for modern office buildings',
-        category: 'commercial',
-        imageUrl: './images/gallery/corporate-entrance.jpg',
-        isFeatured: true,
-        createdAt: new Date().toISOString()
-      }
-    ],
-    blog: [
-      {
-        _id: 'blog-post-1',
-        title: 'Transforming Spaces with Natural Light',
-        content: '<p>Natural light has a profound impact on our well-being and the aesthetics of our living spaces. In this article, we explore innovative window solutions that maximize natural light while maintaining energy efficiency.</p><p>Studies have shown that exposure to natural light improves mood, productivity, and overall health. By incorporating larger windows, strategic placement, and advanced glazing technologies, homeowners can transform their spaces into bright, inviting environments.</p><p>Our latest projects demonstrate how thoughtful window design can reduce dependence on artificial lighting during daylight hours, resulting in significant energy savings while creating more pleasant living environments.</p>',
-        author: 'Sarah Johnson',
-        category: 'Design Tips',
-        imageUrl: './images/blog/natural-light.jpg',
-        tags: ['windows', 'natural light', 'energy efficiency'],
-        isPublished: true,
-        publishedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString()
-      },
-      {
-        _id: 'blog-post-2',
-        title: 'The Evolution of Modern Window Design',
-        content: '<p>Window design has evolved significantly over the centuries, from small openings in stone walls to the expansive glass installations we see today. This evolution reflects changes in architectural preferences, technological capabilities, and lifestyle needs.</p><p>Modern window systems now incorporate advanced features like thermal breaks, low-emissivity coatings, and inert gas fills to improve energy performance. These innovations allow for larger glass areas without compromising comfort or efficiency.</p><p>As we look toward the future, emerging technologies like electrochromic glass and integrated solar collection are poised to further revolutionize how we think about windows in architectural design.</p>',
-        author: 'Michael Chen',
-        category: 'Industry Trends',
-        imageUrl: './images/blog/modern-windows.jpg',
-        tags: ['innovation', 'design history', 'technology'],
-        isPublished: true,
-        publishedAt: new Date().toISOString(),
-        createdAt: new Date().toISOString()
-      },
+// Add this near the top of your existing db-loader.js file, right after the initial console.log
 
-    ],
-    products: [
-      {
-        _id: 'product-1',
-        title: 'Panorama Series Windows',
-        subtitle: 'Maximize Your View',
-        description: 'Our flagship window series offering unobstructed views with minimal framing and maximum glass area. Engineered for strength and thermal performance.',
-        category: 'windows',
-        imageUrl: './images/products/panorama-windows.jpg',
-        featured: true,
-        order: 1,
-        createdAt: new Date().toISOString()
-      },
-      {
-        _id: 'product-2',
-        title: 'Horizon Sliding Doors',
-        subtitle: 'Seamless Indoor-Outdoor Living',
-        description: 'Premium sliding door system with ultra-slim profiles and smooth operation. Available in configurations up to 12 meters wide.',
-        category: 'doors',
-        imageUrl: './images/products/horizon-doors.jpg',
-        featured: true,
-        order: 2,
-        createdAt: new Date().toISOString()
-      },
-      {
-        _id: 'product-3',
-        title: 'Element Pivot Doors',
-        subtitle: 'Make a Grand Entrance',
-        description: 'Oversized pivot doors that create a dramatic entryway statement. Engineered hardware system allows for effortless operation despite substantial size.',
-        category: 'doors',
-        imageUrl: './images/products/pivot-doors.jpg',
-        featured: false,
-        order: 3,
-        createdAt: new Date().toISOString()
-      },
-      {
-        _id: 'product-4',
-        title: 'Infinity Corner Windows',
-        subtitle: 'No Frame, No Limits',
-        description: 'Revolutionary frameless corner window system that creates the illusion of floating glass. Perfect for maximizing views and bringing the outdoors in.',
-        category: 'signature',
-        imageUrl: './images/products/corner-windows.jpg',
-        featured: true,
-        order: 4,
-        createdAt: new Date().toISOString()
-      }
-    ]
-  };
+// Mock gallery data that will be used when API fails
+const mockGalleryItems = [
+  {
+    _id: 'gallery-item-1',
+    title: 'Modern Circular Window Design',
+    description: 'Beautiful circular window installation with a panoramic ocean view',
+    category: 'residential',
+    imageUrl: './images/gallery/circular-window.jpg',
+    isFeatured: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: 'gallery-item-2',
+    title: 'Minimalist Glass Wall',
+    description: 'Floor-to-ceiling glass wall installation for maximum natural light',
+    category: 'commercial',
+    imageUrl: './images/gallery/glass-wall.jpg',
+    isFeatured: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: 'gallery-item-3',
+    title: 'Signature Series Folding Doors',
+    description: 'Custom-designed folding door system for indoor-outdoor living',
+    category: 'signature',
+    imageUrl: './images/gallery/folding-doors.jpg',
+    isFeatured: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: 'gallery-item-4',
+    title: 'Luxury Skylight Installation',
+    description: 'Premium skylight providing natural illumination to interior spaces',
+    category: 'residential',
+    imageUrl: './images/gallery/skylight.jpg',
+    isFeatured: false,
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: 'gallery-item-5',
+    title: 'Corporate Entrance Solution',
+    description: 'Elegant glass entrance design for modern office buildings',
+    category: 'commercial',
+    imageUrl: './images/gallery/corporate-entrance.jpg',
+    isFeatured: true,
+    createdAt: new Date().toISOString()
+  }
+];
 
   // API configuration with retry logic and mock data fallback
   const API = {
@@ -229,9 +156,16 @@ document.addEventListener("DOMContentLoaded", function () {
       return this.fetch("/gallery");
     },
     
-    async getProducts() {
-      return this.fetch("/products");
-    }
+// Find this method in your API object
+async getGallery() {
+  try {
+    const galleryData = await this.fetch("/gallery");
+    return galleryData;
+  } catch (error) {
+    console.log("API error, using mock gallery data instead:", error.message);
+    return mockGalleryItems; // Return mock data when API fails
+  }
+}
   };
 
   // Gallery Manager

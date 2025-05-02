@@ -16,8 +16,8 @@ module.exports = async (req, res) => {
       return res.status(200).json([
         { 
           _id: 'gallery1',
-          title: 'Sample Gallery Item 1',
-          description: 'Beautiful windows with ocean view',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
           imageUrl: '/images/gallery/Gallery-1 (1).jpg',
           category: 'windows',
           isFeatured: true,
@@ -25,22 +25,69 @@ module.exports = async (req, res) => {
         },
         { 
           _id: 'gallery2',
-          title: 'Sample Gallery Item 2',
-          description: 'Elegant door design for modern homes',
-          imageUrl: '/images/gallery/Gallery-1 (2).jpg',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G1.jpg',
           category: 'doors',
           isFeatured: false,
           createdAt: new Date().toISOString()
         },
         { 
           _id: 'gallery3',
-          title: 'Sample Gallery Item 3',
-          description: 'Elegant door design for modern homes',
-          imageUrl: '/images/gallery/Gallery-1 (3).jpg',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G2.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery4',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G3.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery5',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G4.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery6',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G5.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery7',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G6.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery8',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G7.jpg',
           category: 'doors',
           isFeatured: false,
           createdAt: new Date().toISOString()
         }
+
+        
         
       ]);
     } catch (error) {

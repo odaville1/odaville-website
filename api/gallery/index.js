@@ -18,7 +18,7 @@ module.exports = async (req, res) => {
           _id: 'gallery1',
           title: 'Sample Gallery Item 1',
           description: 'Beautiful windows with ocean view',
-          imageUrl: '/images/placeholder.jpg',
+          imageUrl: '/images/gallery/Gallery-1 (1).jpg',
           category: 'windows',
           isFeatured: true,
           createdAt: new Date().toISOString()
@@ -27,11 +27,21 @@ module.exports = async (req, res) => {
           _id: 'gallery2',
           title: 'Sample Gallery Item 2',
           description: 'Elegant door design for modern homes',
-          imageUrl: '/images/placeholder.jpg',
+          imageUrl: '/images/gallery/Gallery-1 (2).jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery3',
+          title: 'Sample Gallery Item 3',
+          description: 'Elegant door design for modern homes',
+          imageUrl: '/images/gallery/Gallery-1 (3).jpg',
           category: 'doors',
           isFeatured: false,
           createdAt: new Date().toISOString()
         }
+        
       ]);
     } catch (error) {
       console.error('Gallery API error:', error);

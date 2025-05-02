@@ -14,15 +14,7 @@ module.exports = async (req, res) => {
     try {
       // Return mock data for now
       return res.status(200).json([
-        { 
-          _id: 'gallery1',
-          title: 'Odaville',
-          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
-          imageUrl: '/images/gallery/Gallery-1 (1).jpg',
-          category: 'windows',
-          isFeatured: true,
-          createdAt: new Date().toISOString()
-        },
+
         { 
           _id: 'gallery2',
           title: 'Odaville',
@@ -79,6 +71,24 @@ module.exports = async (req, res) => {
         },
         { 
           _id: 'gallery8',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G8.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery9',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G9.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery10',
           title: 'Odaville',
           description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
           imageUrl: '/images/gallery/G7.jpg',

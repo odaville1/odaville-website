@@ -7,7 +7,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // API configuration with retry logic
   const API = {
-    baseUrl: "http://localhost:5000/api",
+    // Change from localhost to relative URL for production
+    baseUrl: "/api",
 
     // Fetch with retry logic
     async fetch(endpoint, options = {}) {
@@ -26,7 +27,8 @@ document.addEventListener("DOMContentLoaded", function () {
               "Content-Type": "application/json",
               ...(options.headers || {}),
             },
-            credentials: "include",
+            // Remove credentials include which can cause CORS issues
+            // credentials: "include",
           });
 
           if (!response.ok) {
@@ -155,7 +157,14 @@ document.addEventListener("DOMContentLoaded", function () {
     },
 
     initGalleryEffects() {
-      document.querySelectorAll(".gallery-grid-item").forEach((item) => {
+      // Check if elements exist before applying event listeners
+      const items = document.querySelectorAll(".gallery-grid-item");
+      if (!items || items.length === 0) {
+        console.warn("No gallery items found to initialize effects");
+        return;
+      }
+
+      items.forEach((item) => {
         item.addEventListener("mouseenter", function () {
           const overlay = this.querySelector(".gallery-overlay");
           const caption = this.querySelector(".gallery-caption");
@@ -280,8 +289,13 @@ document.addEventListener("DOMContentLoaded", function () {
         container.appendChild(blogPost);
       });
 
-      // Initialize animations
-      initScrollAnimations();
+      // Check if function exists before calling
+      if (typeof initScrollAnimations === 'function') {
+        initScrollAnimations();
+      } else {
+        // Use the local function instead
+        initLocalScrollAnimations();
+      }
     },
 
     renderPagination(totalPosts, currentPage) {
@@ -554,8 +568,12 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   // Helper function for animations
-  function initScrollAnimations() {
+  function initLocalScrollAnimations() {
     const animatedElements = document.querySelectorAll(".animate-on-scroll");
+    if (!animatedElements || animatedElements.length === 0) {
+      console.warn("No elements found for animation");
+      return;
+    }
 
     function isInViewport(element) {
       const rect = element.getBoundingClientRect();
@@ -642,7 +660,7 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     }
 
-    initScrollAnimations();
+    initLocalScrollAnimations();
   }
 
   // Start the application

@@ -1,14 +1,5 @@
-// api/gallery/index.js
+// api/gallery/[id].js
 const mongoose = require('mongoose');
-const formidable = require('formidable');
-const AWS = require('aws-sdk');
-
-// Configure AWS
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION
-});
 
 const GallerySchema = new mongoose.Schema({
   title: String,
@@ -55,7 +46,7 @@ module.exports = async (req, res) => {
     res.setHeader('Access-Control-Allow-Credentials', 'true');
   }
 
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
   if (req.method === 'OPTIONS') {
@@ -67,50 +58,32 @@ module.exports = async (req, res) => {
     return res.status(500).json({ message: 'Database connection failed' });
   }
 
+  const { id } = req.query;
+
   try {
     if (req.method === 'GET') {
-      const galleries = await Gallery.find().sort({ createdAt: -1 });
-      return res.json(galleries);
+      const item = await Gallery.findById(id);
+      if (!item) {
+        return res.status(404).json({ message: 'Gallery item not found' });
+      }
+      return res.json(item);
     }
 
-    if (req.method === 'POST') {
-      const form = formidable({ multiples: true });
-      
-      const [fields, files] = await new Promise((resolve, reject) => {
-        form.parse(req, (err, fields, files) => {
-          if (err) reject(err);
-          else resolve([fields, files]);
-        });
-      });
-
-      let imageUrl = '';
-      
-      if (files.image) {
-        const file = files.image;
-        const fileContent = require('fs').readFileSync(file.filepath);
-        
-        const params = {
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: `gallery/${Date.now()}-${file.originalFilename}`,
-          Body: fileContent,
-          ContentType: file.mimetype,
-          ACL: 'public-read'
-        };
-
-        const uploadResult = await s3.upload(params).promise();
-        imageUrl = uploadResult.Location;
+    if (req.method === 'DELETE') {
+      const item = await Gallery.findByIdAndDelete(id);
+      if (!item) {
+        return res.status(404).json({ message: 'Gallery item not found' });
       }
+      return res.json({ message: 'Gallery item deleted successfully' });
+    }
 
-      const newGallery = new Gallery({
-        title: fields.title,
-        description: fields.description,
-        imageUrl: imageUrl,
-        category: fields.category,
-        isFeatured: fields.isFeatured === 'true'
-      });
-
-      await newGallery.save();
-      return res.json(newGallery);
+    if (req.method === 'PUT') {
+      // Handle update logic here
+      const item = await Gallery.findByIdAndUpdate(id, req.body, { new: true });
+      if (!item) {
+        return res.status(404).json({ message: 'Gallery item not found' });
+      }
+      return res.json(item);
     }
 
     return res.status(405).json({ message: 'Method not allowed' });

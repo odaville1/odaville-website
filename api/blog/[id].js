@@ -1,47 +1,90 @@
 // api/blog/[id].js
 const mongoose = require('mongoose');
-const Blog = require('../../backend/models/Blog');
 
-// Connect to MongoDB (lazy connection)
-const connectDB = async () => {
-  if (mongoose.connection.readyState === 0) {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-    });
+const BlogSchema = new mongoose.Schema({
+  title: String,
+  content: String,
+  author: String,
+  imageUrl: String,
+  isPublished: Boolean,
+  createdAt: { type: Date, default: Date.now }
+});
+
+let Blog;
+try {
+  Blog = mongoose.model('Blog');
+} catch {
+  Blog = mongoose.model('Blog', BlogSchema);
+}
+
+async function connectToMongoDB() {
+  if (mongoose.connection.readyState !== 1) {
+    try {
+      await mongoose.connect(process.env.MONGODB_URI, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true
+      });
+    } catch (error) {
+      console.error('MongoDB connection error:', error);
+      return false;
+    }
   }
-};
+  return true;
+}
 
 module.exports = async (req, res) => {
-  // Set CORS headers
-  res.setHeader('Access-Control-Allow-Credentials', true);
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,PUT,DELETE,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
+  // CORS headers
+  const allowedOrigins = [
+    'https://www.odaville.com',
+    'https://admin.odaville.com',
+    'http://localhost:3000'
+  ];
 
-  // Handle OPTIONS (preflight) request
+  const origin = req.headers.origin;
+  if (allowedOrigins.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+  }
+
+  res.setHeader('Access-Control-Allow-Methods', 'GET, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
-  
-  // Get blog ID from the URL
-  const id = req.query.id;
-  
+
+  const isConnected = await connectToMongoDB();
+  if (!isConnected) {
+    return res.status(500).json({ message: 'Database connection failed' });
+  }
+
+  const { id } = req.query;
+
   try {
-    await connectDB();
-    
     if (req.method === 'GET') {
       const blog = await Blog.findById(id);
-      
       if (!blog) {
         return res.status(404).json({ message: 'Blog post not found' });
       }
-      
-      return res.status(200).json(blog);
+      return res.json(blog);
     }
-    
-    // Handle other methods like PUT, DELETE here
-    // For now, return 405 Method Not Allowed for unsupported methods
+
+    if (req.method === 'DELETE') {
+      const blog = await Blog.findByIdAndDelete(id);
+      if (!blog) {
+        return res.status(404).json({ message: 'Blog post not found' });
+      }
+      return res.json({ message: 'Blog post deleted successfully' });
+    }
+
+    if (req.method === 'PUT') {
+      const blog = await Blog.findByIdAndUpdate(id, req.body, { new: true });
+      if (!blog) {
+        return res.status(404).json({ message: 'Blog post not found' });
+      }
+      return res.json(blog);
+    }
+
     return res.status(405).json({ message: 'Method not allowed' });
   } catch (error) {
     console.error('Blog API error:', error);

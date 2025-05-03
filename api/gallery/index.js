@@ -1,121 +1,125 @@
-// api/gallery/index.js
-const mongoose = require('mongoose');
-const formidable = require('formidable');
-const AWS = require('aws-sdk');
-
-// Configure AWS
-const s3 = new AWS.S3({
-  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-  region: process.env.AWS_REGION
-});
-
-const GallerySchema = new mongoose.Schema({
-  title: String,
-  description: String,
-  imageUrl: String,
-  category: String,
-  isFeatured: Boolean,
-  createdAt: { type: Date, default: Date.now }
-});
-
-let Gallery;
-try {
-  Gallery = mongoose.model('Gallery');
-} catch {
-  Gallery = mongoose.model('Gallery', GallerySchema);
-}
-
-async function connectToMongoDB() {
-  if (mongoose.connection.readyState !== 1) {
-    try {
-      await mongoose.connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      });
-    } catch (error) {
-      console.error('MongoDB connection error:', error);
-      return false;
-    }
-  }
-  return true;
-}
-
+const { setCorsHeaders } = require('../utils/cors');
+// api/gallery/index.js - Simplified version without DB dependency
 module.exports = async (req, res) => {
-  // CORS headers
+  // Set CORS headers with specific origin handling
   const allowedOrigins = [
     'https://www.odaville.com',
+    'https://odaville.com',
     'https://admin.odaville.com',
-    'http://localhost:3000'
+    'http://localhost:3000',
+    'http://localhost:5173'
   ];
 
   const origin = req.headers.origin;
   if (allowedOrigins.includes(origin)) {
     res.setHeader('Access-Control-Allow-Origin', origin);
     res.setHeader('Access-Control-Allow-Credentials', 'true');
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
   }
 
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
+  
+    try {
+      // Return mock data for now
+      return res.status(200).json([
 
-  const isConnected = await connectToMongoDB();
-  if (!isConnected) {
-    return res.status(500).json({ message: 'Database connection failed' });
-  }
+        { 
+          _id: 'gallery2',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G1.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery3',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G2.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery4',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G3.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery5',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G4.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery6',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G5.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery7',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G6.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery8',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G8.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery9',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G9.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        },
+        { 
+          _id: 'gallery10',
+          title: 'Odaville',
+          description: 'Odaville is a company that specializes in the design and installation of windows and doors.',
+          imageUrl: '/images/gallery/G7.jpg',
+          category: 'doors',
+          isFeatured: false,
+          createdAt: new Date().toISOString()
+        }
 
-  try {
-    if (req.method === 'GET') {
-      const galleries = await Gallery.find().sort({ createdAt: -1 });
-      return res.json(galleries);
-    }
-
-    if (req.method === 'POST') {
-      const form = formidable({ multiples: true });
-      
-      const [fields, files] = await new Promise((resolve, reject) => {
-        form.parse(req, (err, fields, files) => {
-          if (err) reject(err);
-          else resolve([fields, files]);
-        });
-      });
-
-      let imageUrl = '';
-      
-      if (files.image) {
-        const file = files.image;
-        const fileContent = require('fs').readFileSync(file.filepath);
         
-        const params = {
-          Bucket: process.env.AWS_BUCKET_NAME,
-          Key: `gallery/${Date.now()}-${file.originalFilename}`,
-          Body: fileContent,
-          ContentType: file.mimetype,
-          ACL: 'public-read'
-        };
-
-        const uploadResult = await s3.upload(params).promise();
-        imageUrl = uploadResult.Location;
-      }
-
-      const newGallery = new Gallery({
-        title: fields.title,
-        description: fields.description,
-        imageUrl: imageUrl,
-        category: fields.category,
-        isFeatured: fields.isFeatured === 'true'
+        
+      ]);
+    } catch (error) {
+      console.error('Gallery API error:', error);
+      return res.status(500).json({ 
+        message: 'Error processing request', 
+        error: error.message,
+        timestamp: new Date().toISOString() 
       });
-
-      await newGallery.save();
-      return res.json(newGallery);
     }
-
-    return res.status(405).json({ message: 'Method not allowed' });
-  } catch (error) {
-    console.error('Gallery API error:', error);
-    return res.status(500).json({ message: 'Server error', error: error.message });
-  }
-};
+  };

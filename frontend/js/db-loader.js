@@ -57,89 +57,77 @@ const mockGalleryItems = [
   }
 ];
 
-  // API configuration with retry logic and mock data fallback
-  const API = {
-    // Change from localhost to relative URL for production
-    baseUrl: "/api",
-    
-    // Flag to indicate if we're using mock data
-    usingMockData: false,
+// API configuration with retry logic and mock data fallback
+const API = {
+  // Use the full URL for your API
+  baseUrl: "https://www.odaville.com/api",
+  
+  // Flag to indicate if we're using mock data
+  usingMockData: false,
 
-    // Fetch with retry logic and mock data fallback
-    async fetch(endpoint, options = {}) {
-      const url = this.baseUrl + endpoint;
-      const maxRetries = 3;
-      let retryCount = 0;
+  // Fetch with retry logic and mock data fallback
+  async fetch(endpoint, options = {}) {
+    const url = this.baseUrl + endpoint;
+    const maxRetries = 3;
+    let retryCount = 0;
 
-      while (retryCount < maxRetries) {
-        try {
-          console.log(`Fetching from API (attempt ${retryCount + 1}): ${url}`);
+    while (retryCount < maxRetries) {
+      try {
+        console.log(`Fetching from API (attempt ${retryCount + 1}): ${url}`);
 
-          const response = await fetch(url, {
-            ...options,
-            headers: {
-              Accept: "application/json",
-              "Content-Type": "application/json",
-              ...(options.headers || {}),
-            },
-          });
+        const response = await fetch(url, {
+          ...options,
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json",
+            ...(options.headers || {}),
+          },
+        });
 
-          if (!response.ok) {
-            throw new Error(`API returned status: ${response.status}`);
-          }
-
-          const data = await response.json();
-          console.log(
-            `Successfully loaded from database: ${endpoint} - ${
-              Array.isArray(data) ? data.length : 1
-            } items`
-          );
-          return data;
-        } catch (error) {
-          retryCount++;
-          console.error(
-            `API fetch attempt ${retryCount} failed:`,
-            error.message
-          );
-
-          if (retryCount >= maxRetries) {
-            console.error(
-              `All ${maxRetries} attempts failed. Falling back to mock data.`
-            );
-            
-            // Set flag to indicate we're using mock data
-            this.usingMockData = true;
-            
-            // Return mock data based on endpoint
-            if (endpoint.includes("/blog")) {
-              if (endpoint.includes("?") || endpoint.includes("/")) {
-                // Looking for a specific blog post
-                const blogId = endpoint.split("/").pop();
-                const mockBlog = mockData.blog.find(post => post._id === blogId);
-                console.log("Using mock blog data:", mockBlog ? "Found" : "Not found");
-                return mockBlog || null;
-              } else {
-                // All blog posts
-                console.log("Using mock blog data:", mockData.blog.length, "items");
-                return mockData.blog;
-              }
-            } else if (endpoint.includes("/gallery")) {
-              console.log("Using mock gallery data:", mockData.gallery.length, "items");
-              return mockData.gallery;
-            } else if (endpoint.includes("/products")) {
-              console.log("Using mock product data:", mockData.products.length, "items");
-              return mockData.products;
-            }
-            return null;
-          }
-
-          // Wait before retrying (exponential backoff)
-          await new Promise((resolve) =>
-            setTimeout(resolve, 500 * Math.pow(2, retryCount))
-          );
+        if (!response.ok) {
+          throw new Error(`API returned status: ${response.status}`);
         }
+
+        const data = await response.json();
+        console.log(
+          `Successfully loaded from database: ${endpoint} - ${
+            Array.isArray(data) ? data.length : 1
+          } items`
+        );
+        return data;
+      } catch (error) {
+        retryCount++;
+        console.error(
+          `API fetch attempt ${retryCount} failed:`,
+          error.message
+        );
+
+        if (retryCount >= maxRetries) {
+          console.error(
+            `All ${maxRetries} attempts failed. Falling back to mock data.`
+          );
+          
+          // Set flag to indicate we're using mock data
+          this.usingMockData = true;
+          
+          // Return mock data based on endpoint
+          if (endpoint.includes("/blog")) {
+            // Your existing mock data logic
+          } else if (endpoint.includes("/gallery")) {
+            return mockGalleryItems;
+          } else if (endpoint.includes("/products")) {
+            // Your existing mock data logic
+          }
+          return null;
+        }
+
+        // Wait before retrying (exponential backoff)
+        await new Promise((resolve) =>
+          setTimeout(resolve, 500 * Math.pow(2, retryCount))
+        );
       }
-    },
+    }
+  },
 
     // Convenience methods
     async getBlogs(published = false) {

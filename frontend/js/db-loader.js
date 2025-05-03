@@ -6,128 +6,163 @@
 document.addEventListener("DOMContentLoaded", function () {
   console.log("Database-ONLY content loader initialized with mock data support");
 
-// Add this near the top of your existing db-loader.js file, right after the initial console.log
-
-// Mock gallery data that will be used when API fails
-const mockGalleryItems = [
-  {
-    _id: 'gallery-item-1',
-    title: 'Modern Circular Window Design',
-    description: 'Beautiful circular window installation with a panoramic ocean view',
-    category: 'residential',
-    imageUrl: './images/gallery/circular-window.jpg',
-    isFeatured: true,
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 'gallery-item-2',
-    title: 'Minimalist Glass Wall',
-    description: 'Floor-to-ceiling glass wall installation for maximum natural light',
-    category: 'commercial',
-    imageUrl: './images/gallery/glass-wall.jpg',
-    isFeatured: false,
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 'gallery-item-3',
-    title: 'Signature Series Folding Doors',
-    description: 'Custom-designed folding door system for indoor-outdoor living',
-    category: 'signature',
-    imageUrl: './images/gallery/folding-doors.jpg',
-    isFeatured: true,
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 'gallery-item-4',
-    title: 'Luxury Skylight Installation',
-    description: 'Premium skylight providing natural illumination to interior spaces',
-    category: 'residential',
-    imageUrl: './images/gallery/skylight.jpg',
-    isFeatured: false,
-    createdAt: new Date().toISOString()
-  },
-  {
-    _id: 'gallery-item-5',
-    title: 'Corporate Entrance Solution',
-    description: 'Elegant glass entrance design for modern office buildings',
-    category: 'commercial',
-    imageUrl: './images/gallery/corporate-entrance.jpg',
-    isFeatured: true,
-    createdAt: new Date().toISOString()
-  }
-];
-
-// API configuration with retry logic and mock data fallback
-const API = {
-  // Use the full URL for your API
-  baseUrl: "https://www.odaville.com/api",
-  
-  // Flag to indicate if we're using mock data
-  usingMockData: false,
-
-  // Fetch with retry logic and mock data fallback
-  async fetch(endpoint, options = {}) {
-    const url = this.baseUrl + endpoint;
-    const maxRetries = 3;
-    let retryCount = 0;
-
-    while (retryCount < maxRetries) {
-      try {
-        console.log(`Fetching from API (attempt ${retryCount + 1}): ${url}`);
-
-        const response = await fetch(url, {
-          ...options,
-          headers: {
-            "Accept": "application/json",
-            "Content-Type": "application/json",
-            ...(options.headers || {}),
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`API returned status: ${response.status}`);
-        }
-
-        const data = await response.json();
-        console.log(
-          `Successfully loaded from database: ${endpoint} - ${
-            Array.isArray(data) ? data.length : 1
-          } items`
-        );
-        return data;
-      } catch (error) {
-        retryCount++;
-        console.error(
-          `API fetch attempt ${retryCount} failed:`,
-          error.message
-        );
-
-        if (retryCount >= maxRetries) {
-          console.error(
-            `All ${maxRetries} attempts failed. Falling back to mock data.`
-          );
-          
-          // Set flag to indicate we're using mock data
-          this.usingMockData = true;
-          
-          // Return mock data based on endpoint
-          if (endpoint.includes("/blog")) {
-            // Your existing mock data logic
-          } else if (endpoint.includes("/gallery")) {
-            return mockGalleryItems;
-          } else if (endpoint.includes("/products")) {
-            // Your existing mock data logic
-          }
-          return null;
-        }
-
-        // Wait before retrying (exponential backoff)
-        await new Promise((resolve) =>
-          setTimeout(resolve, 500 * Math.pow(2, retryCount))
-        );
-      }
+  // Mock gallery data that will be used when API fails
+  const mockGalleryItems = [
+    {
+      _id: 'gallery-item-1',
+      title: 'Modern Circular Window Design',
+      description: 'Beautiful circular window installation with a panoramic ocean view',
+      category: 'residential',
+      imageUrl: './images/gallery/circular-window.jpg',
+      isFeatured: true,
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: 'gallery-item-2',
+      title: 'Minimalist Glass Wall',
+      description: 'Floor-to-ceiling glass wall installation for maximum natural light',
+      category: 'commercial',
+      imageUrl: './images/gallery/glass-wall.jpg',
+      isFeatured: false,
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: 'gallery-item-3',
+      title: 'Signature Series Folding Doors',
+      description: 'Custom-designed folding door system for indoor-outdoor living',
+      category: 'signature',
+      imageUrl: './images/gallery/folding-doors.jpg',
+      isFeatured: true,
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: 'gallery-item-4',
+      title: 'Luxury Skylight Installation',
+      description: 'Premium skylight providing natural illumination to interior spaces',
+      category: 'residential',
+      imageUrl: './images/gallery/skylight.jpg',
+      isFeatured: false,
+      createdAt: new Date().toISOString()
+    },
+    {
+      _id: 'gallery-item-5',
+      title: 'Corporate Entrance Solution',
+      description: 'Elegant glass entrance design for modern office buildings',
+      category: 'commercial',
+      imageUrl: './images/gallery/corporate-entrance.jpg',
+      isFeatured: true,
+      createdAt: new Date().toISOString()
     }
-  },
+  ];
+
+  // Mock blog data
+  const mockBlogItems = [
+    {
+      _id: 'blog-1',
+      title: 'The Future of Window Design',
+      content: 'Lorem ipsum dolor sit amet, consectetur adipiscing elit...',
+      author: 'Admin',
+      imageUrl: './images/blog/blog1.jpg',
+      isPublished: true,
+      publishedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      category: 'Design'
+    },
+    {
+      _id: 'blog-2',
+      title: 'Energy Efficient Doors: A Guide',
+      content: 'Discover how modern door technology can save energy...',
+      author: 'Admin',
+      imageUrl: './images/blog/blog2.jpg',
+      isPublished: true,
+      publishedAt: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      category: 'Technology'
+    }
+  ];
+
+  // API configuration with retry logic and mock data fallback
+  const API = {
+    // Use the full URL for your API
+    baseUrl: "https://www.odaville.com/api",
+    
+    // Flag to indicate if we're using mock data
+    usingMockData: false,
+
+    // Fetch with retry logic and mock data fallback
+    async fetch(endpoint, options = {}) {
+      const url = this.baseUrl + endpoint;
+      const maxRetries = 3;
+      let retryCount = 0;
+
+      while (retryCount < maxRetries) {
+        try {
+          console.log(`Fetching from API (attempt ${retryCount + 1}): ${url}`);
+
+          const response = await fetch(url, {
+            ...options,
+            headers: {
+              "Accept": "application/json",
+              ...(options.headers || {}),
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`API returned status: ${response.status}`);
+          }
+
+          const data = await response.json();
+          console.log(
+            `Successfully loaded from database: ${endpoint} - ${
+              Array.isArray(data) ? data.length : 1
+            } items`
+          );
+          return data;
+        } catch (error) {
+          retryCount++;
+          console.error(
+            `API fetch attempt ${retryCount} failed:`,
+            error.message
+          );
+
+          if (retryCount >= maxRetries) {
+            console.error(
+              `All ${maxRetries} attempts failed. Falling back to mock data.`
+            );
+            
+            // Set flag to indicate we're using mock data
+            this.usingMockData = true;
+            
+            // Return mock data based on endpoint
+            if (endpoint.includes("/blog")) {
+              if (endpoint.includes("/")) {
+                // Looking for a specific blog post
+                const blogId = endpoint.split("/").pop();
+                const mockBlog = mockBlogItems.find(post => post._id === blogId);
+                console.log("Using mock blog data:", mockBlog ? "Found" : "Not found");
+                return mockBlog || null;
+              } else {
+                // All blog posts
+                console.log("Using mock blog data:", mockBlogItems.length, "items");
+                return mockBlogItems;
+              }
+            } else if (endpoint.includes("/gallery")) {
+              console.log("Using mock gallery data:", mockGalleryItems.length, "items");
+              return mockGalleryItems;
+            } else if (endpoint.includes("/products")) {
+              // Add mock products data if needed
+              return [];
+            }
+            return null;
+          }
+
+          // Wait before retrying (exponential backoff)
+          await new Promise((resolve) =>
+            setTimeout(resolve, 500 * Math.pow(2, retryCount))
+          );
+        }
+      }
+    },
 
     // Convenience methods
     async getBlogs(published = false) {
@@ -141,19 +176,14 @@ const API = {
     },
 
     async getGallery() {
-      return this.fetch("/gallery");
-    },
-    
-// Find this method in your API object
-async getGallery() {
-  try {
-    const galleryData = await this.fetch("/gallery");
-    return galleryData;
-  } catch (error) {
-    console.log("API error, using mock gallery data instead:", error.message);
-    return mockGalleryItems; // Return mock data when API fails
-  }
-}
+      try {
+        const galleryData = await this.fetch("/gallery");
+        return galleryData;
+      } catch (error) {
+        console.log("API error, using mock gallery data instead:", error.message);
+        return mockGalleryItems; // Return mock data when API fails
+      }
+    }
   };
 
   // Gallery Manager
@@ -204,15 +234,15 @@ async getGallery() {
           galleryItem.style.height = isLarge ? "450px" : "300px";
 
           galleryItem.innerHTML = `
-                        <img src="${item.imageUrl}" alt="${item.title}" 
-                             onerror="this.onerror=null; this.src='./images/fallback.jpg';">
-                        <div class="gallery-overlay">
-                            <div class="gallery-caption">
-                                <h3>${item.title}</h3>
-                                <p>${item.description || ""}</p>
-                            </div>
-                        </div>
-                    `;
+            <img src="${item.imageUrl}" alt="${item.title}" 
+                 onerror="this.onerror=null; this.src='./images/fallback.jpg';">
+            <div class="gallery-overlay">
+                <div class="gallery-caption">
+                    <h3>${item.title}</h3>
+                    <p>${item.description || ""}</p>
+                </div>
+            </div>
+          `;
 
           this.galleryContainer.appendChild(galleryItem);
         });
@@ -350,17 +380,17 @@ async getGallery() {
         blogPost.className = "blog-post animate-on-scroll";
 
         blogPost.innerHTML = `
-                    <div class="blog-post-image">
-                        <img src="${post.imageUrl}" alt="${post.title}"
-                             onerror="this.onerror=null; this.src='./images/fallback.jpg';">
-                    </div>
-                    <div class="blog-post-content">
-                        <div class="blog-post-date">${formattedDate}</div>
-                        <h3 class="blog-post-title">${post.title}</h3>
-                        <div class="blog-post-excerpt">${excerpt}</div>
-                        <a href="blog-detail.html?slug=${post._id}" class="blog-post-link">Read More</a>
-                    </div>
-                `;
+          <div class="blog-post-image">
+              <img src="${post.imageUrl}" alt="${post.title}"
+                   onerror="this.onerror=null; this.src='./images/fallback.jpg';">
+          </div>
+          <div class="blog-post-content">
+              <div class="blog-post-date">${formattedDate}</div>
+              <h3 class="blog-post-title">${post.title}</h3>
+              <div class="blog-post-excerpt">${excerpt}</div>
+              <a href="blog-detail.html?slug=${post._id}" class="blog-post-link">Read More</a>
+          </div>
+        `;
 
         container.appendChild(blogPost);
       });
@@ -374,7 +404,6 @@ async getGallery() {
       }
     },
 
-    // Rest of blogManager methods remain the same
     renderPagination(totalPosts, currentPage) {
       if (!this.blogPagination) return;
 
@@ -499,57 +528,53 @@ async getGallery() {
 
         // Render blog post
         this.blogDetailContainer.innerHTML = `
-                    <div class="blog-detail-header">
-                        <h1 class="blog-detail-title">${post.title}</h1>
-                        <div class="blog-detail-meta">
-                            <span class="blog-detail-date">${formattedDate}</span>
-                            <span class="blog-detail-author">by ${
-                              post.author
-                            }</span>
-                            <div class="blog-detail-categories">
-                                <span class="category-tag">${
-                                  post.category || "Uncategorized"
-                                }</span>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="blog-detail-featured-image">
-                        <img src="${post.imageUrl}" alt="${post.title}"
-                             onerror="this.onerror=null; this.src='./images/fallback.jpg';">
-                    </div>
-                    
-                    <div class="blog-detail-content">
-                        ${post.content}
-                    </div>
-                    
-                    <div class="blog-detail-footer">
-                        <div class="share-buttons">
-                            <span>Share this post:</span>
-                            <a href="https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(
-                              window.location.href
-                            )}" target="_blank" class="share-button facebook">
-                                <i class="fab fa-facebook-f"></i>
-                            </a>
-                            <a href="https://twitter.com/intent/tweet?url=${encodeURIComponent(
-                              window.location.href
-                            )}&text=${encodeURIComponent(
+          <div class="blog-detail-header">
+              <h1 class="blog-detail-title">${post.title}</h1>
+              <div class="blog-detail-meta">
+                  <span class="blog-detail-date">${formattedDate}</span>
+                  <span class="blog-detail-author">by ${post.author}</span>
+                  <div class="blog-detail-categories">
+                      <span class="category-tag">${post.category || "Uncategorized"}</span>
+                  </div>
+              </div>
+          </div>
+          
+          <div class="blog-detail-featured-image">
+              <img src="${post.imageUrl}" alt="${post.title}"
+                   onerror="this.onerror=null; this.src='./images/fallback.jpg';">
+          </div>
+          
+          <div class="blog-detail-content">
+              ${post.content}
+          </div>
+          
+          <div class="blog-detail-footer">
+              <div class="share-buttons">
+                  <span>Share this post:</span>
+                  <a href="https://facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+                    window.location.href
+                  )}" target="_blank" class="share-button facebook">
+                      <i class="fab fa-facebook-f"></i>
+                  </a>
+                  <a href="https://twitter.com/intent/tweet?url=${encodeURIComponent(
+                    window.location.href
+                  )}&text=${encodeURIComponent(
           post.title
         )}" target="_blank" class="share-button twitter">
-                                <i class="fab fa-twitter"></i>
-                            </a>
-                            <a href="https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
-                              window.location.href
-                            )}&title=${encodeURIComponent(
+                      <i class="fab fa-twitter"></i>
+                  </a>
+                  <a href="https://www.linkedin.com/shareArticle?mini=true&url=${encodeURIComponent(
+                    window.location.href
+                  )}&title=${encodeURIComponent(
           post.title
         )}" target="_blank" class="share-button linkedin">
-                                <i class="fab fa-linkedin-in"></i>
-                            </a>
-                        </div>
-                        
-                        <a href="blog.html" class="back-to-blog">← Back to Blog</a>
-                    </div>
-                `;
+                      <i class="fab fa-linkedin-in"></i>
+                  </a>
+              </div>
+              
+              <a href="blog.html" class="back-to-blog">← Back to Blog</a>
+          </div>
+        `;
 
         // Load related posts
         this.loadRelatedPosts(post);
@@ -625,17 +650,17 @@ async getGallery() {
           postElement.className = "blog-post";
 
           postElement.innerHTML = `
-                        <div class="blog-post-image">
-                            <img src="${post.imageUrl}" alt="${post.title}"
-                                 onerror="this.onerror=null; this.src='./images/fallback.jpg';">
-                        </div>
-                        <div class="blog-post-content">
-                            <div class="blog-post-date">${formattedDate}</div>
-                            <h3 class="blog-post-title">${post.title}</h3>
-                            <div class="blog-post-excerpt">${excerpt}</div>
-                            <a href="blog-detail.html?slug=${post._id}" class="blog-post-link">Read More</a>
-                        </div>
-                    `;
+            <div class="blog-post-image">
+                <img src="${post.imageUrl}" alt="${post.title}"
+                     onerror="this.onerror=null; this.src='./images/fallback.jpg';">
+            </div>
+            <div class="blog-post-content">
+                <div class="blog-post-date">${formattedDate}</div>
+                <h3 class="blog-post-title">${post.title}</h3>
+                <div class="blog-post-excerpt">${excerpt}</div>
+                <a href="blog-detail.html?slug=${post._id}" class="blog-post-link">Read More</a>
+            </div>
+          `;
 
           relatedContainer.appendChild(postElement);
         });

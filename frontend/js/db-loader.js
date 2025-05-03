@@ -83,18 +83,22 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // API configuration with retry logic and mock data fallback
   const API = {
+    // Use the full URL for your API
     baseUrl: "https://www.odaville.com/api",
+    
+    // Flag to indicate if we're using mock data
     usingMockData: false,
-  
+
+    // Fetch with retry logic and mock data fallback
     async fetch(endpoint, options = {}) {
       const url = this.baseUrl + endpoint;
       const maxRetries = 3;
       let retryCount = 0;
-  
+
       while (retryCount < maxRetries) {
         try {
           console.log(`Fetching from API (attempt ${retryCount + 1}): ${url}`);
-  
+
           const response = await fetch(url, {
             ...options,
             headers: {
@@ -102,17 +106,25 @@ document.addEventListener("DOMContentLoaded", function () {
               ...(options.headers || {}),
             },
           });
-  
+
+          console.log(`API response status: ${response.status}`);
+
           if (!response.ok) {
+            const errorText = await response.text();
+            console.error(`API error response: ${errorText}`);
             throw new Error(`API returned status: ${response.status}`);
           }
-  
+
           const data = await response.json();
+          console.log("API Response Data:", data);
           console.log(
             `Successfully loaded from database: ${endpoint} - ${
               Array.isArray(data) ? data.length : 1
             } items`
           );
+          
+          // Reset the mock data flag on successful fetch
+          this.usingMockData = false;
           
           // Return the data immediately on success
           return data;
@@ -123,37 +135,51 @@ document.addEventListener("DOMContentLoaded", function () {
             `API fetch attempt ${retryCount} failed:`,
             error.message
           );
-  
+
+          // Only fall back to mock data if all retries fail
           if (retryCount >= maxRetries) {
             console.error(
               `All ${maxRetries} attempts failed. Falling back to mock data.`
             );
             
+            // Set flag to indicate we're using mock data
             this.usingMockData = true;
             
             // Return mock data based on endpoint
             if (endpoint.includes("/blog")) {
-              if (endpoint.includes("/")) {
+              if (endpoint.includes("/") && endpoint.split("/").length > 2) {
+                // Looking for a specific blog post
                 const blogId = endpoint.split("/").pop();
                 const mockBlog = mockBlogItems.find(post => post._id === blogId);
+                console.log("Using mock blog data for ID:", blogId);
                 return mockBlog || null;
               } else {
+                // All blog posts
+                console.log("Using mock blog data:", mockBlogItems.length, "items");
                 return mockBlogItems;
               }
             } else if (endpoint.includes("/gallery")) {
+              console.log("Using mock gallery data:", mockGalleryItems.length, "items");
               return mockGalleryItems;
             } else if (endpoint.includes("/products")) {
+              console.log("Using mock products data: empty array");
               return [];
             }
+            
+            console.error("No mock data available for endpoint:", endpoint);
             return null;
           }
-  
+
           // Wait before retrying (exponential backoff)
-          await new Promise((resolve) =>
-            setTimeout(resolve, 500 * Math.pow(2, retryCount))
-          );
+          const delay = 500 * Math.pow(2, retryCount);
+          console.log(`Waiting ${delay}ms before retry...`);
+          await new Promise((resolve) => setTimeout(resolve, delay));
         }
       }
+      
+      // This should never be reached, but just in case
+      console.error("Unexpected: fetch function completed all retries without success or failure");
+      return null;
     },
 
     // Convenience methods
@@ -168,13 +194,7 @@ document.addEventListener("DOMContentLoaded", function () {
     },
 
     async getGallery() {
-      try {
-        const galleryData = await this.fetch("/gallery");
-        return galleryData;
-      } catch (error) {
-        console.log("API error, using mock gallery data instead:", error.message);
-        return mockGalleryItems; // Return mock data when API fails
-      }
+      return this.fetch("/gallery");
     }
   };
 
@@ -194,6 +214,9 @@ document.addEventListener("DOMContentLoaded", function () {
       try {
         // Get gallery items from API with mock data fallback
         const items = await API.getGallery();
+        
+        console.log("Gallery items received:", items);
+        console.log("Is using mock data?", API.usingMockData);
 
         if (!items || items.length === 0) {
           this.galleryContainer.innerHTML =

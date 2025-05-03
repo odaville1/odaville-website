@@ -21,26 +21,36 @@ try {
 
 // Connect to MongoDB
 async function connectToMongoDB() {
-  if (mongoose.connection.readyState !== 1) {
-    try {
-      await mongoose.connect(process.env.MONGODB_URI, {
-        useNewUrlParser: true,
-        useUnifiedTopology: true
-      });
-      console.log('Connected to MongoDB');
-    } catch (error) {
-      console.error('MongoDB connection error:', error);
-      return false;
-    }
+  // Check if MongoDB URI exists
+  if (!process.env.MONGODB_URI) {
+    console.error('MONGODB_URI environment variable is not set');
+    return false;
   }
-  return true;
+
+  if (mongoose.connection.readyState === 1) {
+    return true;
+  }
+
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      bufferCommands: false,
+      serverSelectionTimeoutMS: 5000,
+    });
+    console.log('Connected to MongoDB');
+    return true;
+  } catch (error) {
+    console.error('MongoDB connection error:', error.message);
+    return false;
+  }
 }
 
 module.exports = async (req, res) => {
   // Set CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,POST,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
   // Handle OPTIONS request
@@ -48,30 +58,43 @@ module.exports = async (req, res) => {
     return res.status(200).end();
   }
 
-  try {
-    // Connect to MongoDB
-    const isConnected = await connectToMongoDB();
-    
-    if (!isConnected) {
-      // If connection fails, return empty array or fallback data
-      console.error('Failed to connect to MongoDB');
-      return res.status(500).json({ 
-        message: 'Database connection failed',
-        error: 'Could not connect to MongoDB'
-      });
-    }
-    
-    // Fetch gallery items from MongoDB
-    const galleryItems = await Gallery.find().sort({ createdAt: -1 });
-    
-    return res.status(200).json(galleryItems);
-    
-  } catch (error) {
-    console.error('Gallery API error:', error);
+  // Debug: Check if environment variable exists
+  if (!process.env.MONGODB_URI) {
+    console.error('MONGODB_URI is missing');
     return res.status(500).json({ 
-      message: 'Error fetching gallery items',
-      error: error.message,
-      timestamp: new Date().toISOString() 
+      message: 'Server configuration error',
+      error: 'MONGODB_URI environment variable is not set'
     });
   }
+
+  // For GET requests
+  if (req.method === 'GET') {
+    try {
+      const isConnected = await connectToMongoDB();
+      
+      if (!isConnected) {
+        console.error('Failed to connect to MongoDB');
+        return res.status(500).json({ 
+          message: 'Database connection failed',
+          error: 'Could not connect to MongoDB'
+        });
+      }
+      
+      // Fetch gallery items from MongoDB
+      const galleryItems = await Gallery.find().sort({ createdAt: -1 });
+      
+      return res.status(200).json(galleryItems);
+      
+    } catch (error) {
+      console.error('Gallery API error:', error);
+      return res.status(500).json({ 
+        message: 'Error fetching gallery items',
+        error: error.message,
+        timestamp: new Date().toISOString() 
+      });
+    }
+  }
+
+  // For other methods that need to be implemented
+  return res.status(405).json({ message: 'Method not allowed' });
 };

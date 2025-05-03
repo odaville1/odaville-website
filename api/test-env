@@ -1,0 +1,8 @@
+// api/test-env.js
+export default function handler(req, res) {
+  res.status(200).json({
+    hasMongoUri: !!process.env.MONGODB_URI,
+    nodeEnv: process.env.NODE_ENV,
+    timestamp: new Date().toISOString()
+  });
+}

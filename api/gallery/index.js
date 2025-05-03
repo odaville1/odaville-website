@@ -1,17 +1,26 @@
 // api/gallery/index.js
 const mongoose = require('mongoose');
+const formidable = require('formidable');
+const AWS = require('aws-sdk');
+const fs = require('fs');
 
-// Define Gallery schema
+// Configure AWS
+const s3 = new AWS.S3({
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  region: process.env.AWS_REGION
+});
+
+// Gallery Schema
 const GallerySchema = new mongoose.Schema({
-  title: { type: String, required: true },
+  title: String,
   description: String,
-  imageUrl: { type: String, required: true },
+  imageUrl: String,
   category: String,
-  isFeatured: { type: Boolean, default: false },
+  isFeatured: Boolean,
   createdAt: { type: Date, default: Date.now }
 });
 
-// Create model
 let Gallery;
 try {
   Gallery = mongoose.model('Gallery');
@@ -19,7 +28,6 @@ try {
   Gallery = mongoose.model('Gallery', GallerySchema);
 }
 
-// Connect to MongoDB
 async function connectToMongoDB() {
   if (mongoose.connection.readyState !== 1) {
     try {
@@ -37,41 +45,93 @@ async function connectToMongoDB() {
 }
 
 module.exports = async (req, res) => {
-  // Set CORS headers
+  // CORS headers
   res.setHeader('Access-Control-Allow-Credentials', true);
   res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
 
-  // Handle OPTIONS request
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
+  const isConnected = await connectToMongoDB();
+  if (!isConnected) {
+    return res.status(500).json({ message: 'Database connection failed' });
+  }
+
   try {
-    // Connect to MongoDB
-    const isConnected = await connectToMongoDB();
-    
-    if (!isConnected) {
-      // If connection fails, return empty array or fallback data
-      console.error('Failed to connect to MongoDB');
-      return res.status(500).json({ 
-        message: 'Database connection failed',
-        error: 'Could not connect to MongoDB'
+    if (req.method === 'GET') {
+      const galleries = await Gallery.find().sort({ createdAt: -1 });
+      return res.json(galleries);
+    }
+
+    if (req.method === 'POST') {
+      return new Promise((resolve, reject) => {
+        const form = formidable({
+          multiples: true,
+          keepExtensions: true
+        });
+
+        form.parse(req, async (err, fields, files) => {
+          if (err) {
+            console.error('Form parse error:', err);
+            res.status(500).json({ message: 'Error parsing form data' });
+            return resolve();
+          }
+
+          try {
+            let imageUrl = '';
+
+            // Handle image upload
+            if (files.image) {
+              const file = Array.isArray(files.image) ? files.image[0] : files.image;
+              const fileContent = fs.readFileSync(file.filepath);
+              
+              // Create unique filename
+              const timestamp = Date.now();
+              const fileName = `gallery/${timestamp}-${file.originalFilename}`;
+              
+              // S3 upload parameters
+              const params = {
+                Bucket: process.env.AWS_BUCKET_NAME,
+                Key: fileName,
+                Body: fileContent,
+                ContentType: file.mimetype,
+                ACL: 'public-read' // Makes the file publicly accessible
+              };
+
+              // Upload to S3
+              const uploadResult = await s3.upload(params).promise();
+              imageUrl = uploadResult.Location; // This will be the full S3 URL
+              
+              console.log('Image uploaded to S3:', imageUrl);
+            }
+
+            // Create gallery item with S3 URL
+            const newGallery = new Gallery({
+              title: Array.isArray(fields.title) ? fields.title[0] : fields.title,
+              description: Array.isArray(fields.description) ? fields.description[0] : fields.description,
+              imageUrl: imageUrl,
+              category: Array.isArray(fields.category) ? fields.category[0] : fields.category,
+              isFeatured: fields.isFeatured === 'true' || fields.isFeatured === true
+            });
+
+            await newGallery.save();
+            res.status(201).json(newGallery);
+            resolve();
+          } catch (error) {
+            console.error('Error saving gallery item:', error);
+            res.status(500).json({ message: 'Error saving gallery item', error: error.message });
+            resolve();
+          }
+        });
       });
     }
-    
-    // Fetch gallery items from MongoDB
-    const galleryItems = await Gallery.find().sort({ createdAt: -1 });
-    
-    return res.status(200).json(galleryItems);
-    
+
+    return res.status(405).json({ message: 'Method not allowed' });
   } catch (error) {
     console.error('Gallery API error:', error);
-    return res.status(500).json({ 
-      message: 'Error fetching gallery items',
-      error: error.message,
-      timestamp: new Date().toISOString() 
-    });
+    return res.status(500).json({ message: 'Server error', error: error.message });
   }
 };

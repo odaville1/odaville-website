@@ -1,8 +1,7 @@
-// Update api/blog/index.js to use real MongoDB
+// api/blog/index.js
 const mongoose = require('mongoose');
-const { setCorsHeaders } = require('../utils/cors');
 
-// Define Blog schema inline for this function
+// Define Blog schema
 const BlogSchema = new mongoose.Schema({
   title: String,
   content: String,
@@ -18,10 +17,8 @@ const BlogSchema = new mongoose.Schema({
 // Create model
 let Blog;
 try {
-  // Try to get the model if it exists
   Blog = mongoose.model('Blog');
 } catch {
-  // Create the model if it doesn't exist
   Blog = mongoose.model('Blog', BlogSchema);
 }
 
@@ -31,8 +28,7 @@ async function connectToMongoDB() {
     try {
       await mongoose.connect(process.env.MONGODB_URI, {
         useNewUrlParser: true,
-        useUnifiedTopology: true,
-        serverSelectionTimeoutMS: 5000
+        useUnifiedTopology: true
       });
       console.log('Connected to MongoDB');
     } catch (error) {
@@ -44,56 +40,27 @@ async function connectToMongoDB() {
 }
 
 module.exports = async (req, res) => {
-  // Set CORS headers with specific origin handling
-  const allowedOrigins = [
-    'https://www.odaville.com',
-    'https://odaville.com', 
-    'https://admin.odaville.com',
-    'http://localhost:3000',
-    'http://localhost:5173'
-  ];
-
-  const origin = req.headers.origin;
-  if (allowedOrigins.includes(origin)) {
-    res.setHeader('Access-Control-Allow-Origin', origin);
-    res.setHeader('Access-Control-Allow-Credentials', 'true');
-  } else {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-  }
-
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  // Set CORS headers
+  res.setHeader('Access-Control-Allow-Credentials', true);
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization');
 
+  // Handle OPTIONS request
   if (req.method === 'OPTIONS') {
     return res.status(200).end();
   }
 
   try {
-    // Try to connect to MongoDB
+    // Connect to MongoDB
     const isConnected = await connectToMongoDB();
     
     if (!isConnected) {
-      // Fall back to mock data if MongoDB connection fails
-      return res.status(200).json([
-        { 
-          _id: 'blog1',
-          title: 'Sample Blog Post 1',
-          content: '<p>This is a sample blog post.</p>',
-          author: 'Admin',
-          imageUrl: '/images/placeholder.jpg',
-          createdAt: new Date().toISOString(),
-          isPublished: true
-        },
-        { 
-          _id: 'blog2',
-          title: 'Sample Blog Post 2',
-          content: '<p>This is another sample blog post.</p>',
-          author: 'Admin',
-          imageUrl: '/images/placeholder.jpg',
-          createdAt: new Date().toISOString(),
-          isPublished: true
-        }
-      ]);
+      console.error('Failed to connect to MongoDB');
+      return res.status(500).json({ 
+        message: 'Database connection failed',
+        error: 'Could not connect to MongoDB'
+      });
     }
     
     // Get query parameters
@@ -104,29 +71,16 @@ module.exports = async (req, res) => {
       query.isPublished = true;
     }
 
-    // Get blog posts from the database
+    // Fetch blog posts from MongoDB
     const blogs = await Blog.find(query).sort({ createdAt: -1 });
     
-    // Return empty array if no blogs found
-    if (!blogs || blogs.length === 0) {
-      return res.status(200).json([]);
-    }
-    
     return res.status(200).json(blogs);
+    
   } catch (error) {
     console.error('Blog API error:', error);
-    
-    // Return mock data in case of error
-    return res.status(200).json([
-      { 
-        _id: 'fallback1',
-        title: 'Fallback Blog Post',
-        content: '<p>This is a fallback blog post when database is unavailable.</p>',
-        author: 'System',
-        imageUrl: '/images/placeholder.jpg',
-        createdAt: new Date().toISOString(),
-        isPublished: true
-      }
-    ]);
+    return res.status(500).json({ 
+      message: 'Error fetching blog posts',
+      error: error.message
+    });
   }
 };

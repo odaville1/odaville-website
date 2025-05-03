@@ -83,22 +83,18 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // API configuration with retry logic and mock data fallback
   const API = {
-    // Use the full URL for your API
     baseUrl: "https://www.odaville.com/api",
-    
-    // Flag to indicate if we're using mock data
     usingMockData: false,
-
-    // Fetch with retry logic and mock data fallback
+  
     async fetch(endpoint, options = {}) {
       const url = this.baseUrl + endpoint;
       const maxRetries = 3;
       let retryCount = 0;
-
+  
       while (retryCount < maxRetries) {
         try {
           console.log(`Fetching from API (attempt ${retryCount + 1}): ${url}`);
-
+  
           const response = await fetch(url, {
             ...options,
             headers: {
@@ -106,56 +102,52 @@ document.addEventListener("DOMContentLoaded", function () {
               ...(options.headers || {}),
             },
           });
-
+  
           if (!response.ok) {
             throw new Error(`API returned status: ${response.status}`);
           }
-
+  
           const data = await response.json();
           console.log(
             `Successfully loaded from database: ${endpoint} - ${
               Array.isArray(data) ? data.length : 1
             } items`
           );
+          
+          // Return the data immediately on success
           return data;
+          
         } catch (error) {
           retryCount++;
           console.error(
             `API fetch attempt ${retryCount} failed:`,
             error.message
           );
-
+  
           if (retryCount >= maxRetries) {
             console.error(
               `All ${maxRetries} attempts failed. Falling back to mock data.`
             );
             
-            // Set flag to indicate we're using mock data
             this.usingMockData = true;
             
             // Return mock data based on endpoint
             if (endpoint.includes("/blog")) {
               if (endpoint.includes("/")) {
-                // Looking for a specific blog post
                 const blogId = endpoint.split("/").pop();
                 const mockBlog = mockBlogItems.find(post => post._id === blogId);
-                console.log("Using mock blog data:", mockBlog ? "Found" : "Not found");
                 return mockBlog || null;
               } else {
-                // All blog posts
-                console.log("Using mock blog data:", mockBlogItems.length, "items");
                 return mockBlogItems;
               }
             } else if (endpoint.includes("/gallery")) {
-              console.log("Using mock gallery data:", mockGalleryItems.length, "items");
               return mockGalleryItems;
             } else if (endpoint.includes("/products")) {
-              // Add mock products data if needed
               return [];
             }
             return null;
           }
-
+  
           // Wait before retrying (exponential backoff)
           await new Promise((resolve) =>
             setTimeout(resolve, 500 * Math.pow(2, retryCount))

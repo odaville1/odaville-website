@@ -44,7 +44,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add event listeners
     hamburger.addEventListener('click', toggleMenu);
     overlay.addEventListener('click', toggleMenu);
-    if (closeBtn) closeBtn.addEventListener('click', toggleMenu);
+    // Use event delegation for close button
+    document.addEventListener('click', function(e) {
+        if (e.target && e.target.classList.contains('mobile-nav-close')) {
+            toggleMenu();
+        }
+    });
     
     // Close menu when a link is clicked
     if (mobileNav) {
